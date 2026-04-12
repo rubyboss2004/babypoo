@@ -1,1 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>寶寶勇士樂譜庫</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; background: #F5F4EF; color: #2C2C2A; padding: 16px; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  .sub { font-size: 13px; color: #888; margin-bottom: 16px; }
+  .search-toggle { text-align: right; margin-bottom: 8px; }
+  .search-toggle button { background: none; border: none; color: #0C447C; font-size: 13px; cursor: pointer; padding: 4px 8px; }
+  .controls { display: none; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .controls.show { display: flex; }
+  input, select { padding: 10px 12px; border: 1px solid #D3D1C7; border-radius: 8px; font-size: 14px; background: #fff; font-family: inherit; }
+  input { flex: 1; min-width: 180px; }
+  select { width: 110px; }
+  .card { background: #fff; border: 1px solid #E5E3DB; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .card-head { padding: 14px 16px; }
+  .name { font-size: 16px; font-weight: 500; }
+  .meta { font-size: 12px; color: #666; margin-top: 4px; }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-left: 6px; vertical-align: middle; }
+  .tag-fast { background: #FAEEDA; color: #854F0B; }
+  .tag-slow { background: #E6F1FB; color: #0C447C; }
+  .badge-new { background: #E1F5EE; color: #085041; font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-left: 6px; vertical-align: middle; }
+  .card-body { padding: 0 12px 12px; }
+  .card-body img { width: 100%; height: auto; display: block; border-radius: 6px; cursor: pointer; }
+  .hint { font-size: 11px; color: #888; text-align: center; margin: 8px 0 0; }
+  .empty { text-align: center; color: #888; padding: 40px 0; font-size: 14px; }
+  .count { font-size: 12px; color: #999; text-align: center; margin-top: 16px; }
+  .loading { text-align: center; color: #888; padding: 40px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>寶寶勇士樂譜庫</h1>
+  <p class="sub">點圖片即可下載 · 手機長按存到相簿</p>
 
+  <div class="search-toggle">
+    <button id="toggleSearch">🔍 搜尋</button>
+  </div>
+
+  <div class="controls" id="controls">
+    <input type="text" id="search" placeholder="搜尋曲名、原唱..." />
+    <select id="filter">
+      <option value="all">全部</option>
+      <option value="快歌">快歌</option>
+      <option value="慢歌">慢歌</option>
+    </select>
+  </div>
+
+  <div id="list"><div class="loading">載入中...</div></div>
+  <p class="count" id="count"></p>
+</div>
+
+<script>
+  // 換成你的 GAS 網址 + ?api=list
+  const API = 'https://script.google.com/macros/s/AKfycbwDzqeKKe-ER3OoipeptQXPe2izLp7YU0PZNYHPulaqIDdiHC7e_ZTWUmvpB4zr0nV_/exec?api=list';
+
+  let songs = [];
+
+  async function loadSongs() {
+    try {
+      const res = await fetch(API);
+      const data = await res.json();
+      if (data.success) {
+        songs = data.songs.reverse();
+        render();
+      } else {
+        document.getElementById('list').innerHTML = '<div class="empty">載入失敗：' + data.error + '</div>';
+      }
+    } catch (err) {
+      document.getElementById('list').innerHTML = '<div class="empty">連線失敗：' + err.message + '</div>';
+    }
+  }
+
+  function render() {
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    const t = document.getElementById('filter').value;
+    const filtered = songs.filter(function(s) {
+      const matchQ = !q || (s.title || '').toLowerCase().includes(q) || (s.artist || '').toLowerCase().includes(q);
+      const matchT = t === 'all' || s.type === t;
+      return matchQ && matchT;
+    });
+
+    const list = document.getElementById('list');
+    if (filtered.length === 0) {
+      list.innerHTML = '<div class="empty">找不到符合的譜</div>';
+    } else {
+      list.innerHTML = filtered.map(function(s, idx) {
+        const tagClass = s.type === '快歌' ? 'tag-fast' : 'tag-slow';
+        const isNewest = idx === 0 && !q && t === 'all';
+        const newBadge = isNewest ? '<span class="badge-new">最新</span>' : '';
+        const imageHtml = s.imageUrl
+          ? '<div class="card-body"><a href="' + s.imageUrl + '" download="' + escapeHtml(s.title) + '.png" target="_blank"><img src="' + s.imageUrl + '" alt="' + escapeHtml(s.title) + '" /></a><p class="hint">點圖片下載 · 手機長按存到相簿</p></div>'
+          : '';
+        return '<div class="card">' +
+          '<div class="card-head">' +
+            '<div class="name">' + escapeHtml(s.title) +
+              '<span class="tag ' + tagClass + '">' + escapeHtml(s.type) + '</span>' +
+              newBadge +
+            '</div>' +
+            '<div class="meta">' +
+              escapeHtml(s.artist || '') +
+              (s.key ? ' · Key ' + escapeHtml(s.key) : '') +
+              (s.bpm ? ' · ' + escapeHtml(s.bpm) + ' BPM' : '') +
+            '</div>' +
+          '</div>' +
+          imageHtml +
+        '</div>';
+      }).join('');
+    }
+    document.getElementById('count').textContent = '共 ' + filtered.length + ' 首';
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, function(c) {
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);
+    });
+  }
+
+  document.getElementById('toggleSearch').addEventListener('click', function() {
+    document.getElementById('controls').classList.toggle('show');
+  });
+  document.getElementById('search').addEventListener('input', render);
+  document.getElementById('filter').addEventListener('change', render);
+
+  loadSongs();
+</script>
+</body>
+</html>
