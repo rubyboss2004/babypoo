@@ -194,7 +194,7 @@
       const data = await res.json();
 
       if (data.success) {
-        modalStatus.textContent = '✓ 送出成功！老闆收到囉';
+        modalStatus.textContent = '✓ 送出成功！老師收到囉';
         modalStatus.className = 'modal-status ok';
         setTimeout(function() { modal.classList.remove('show'); }, 1500);
       } else {
