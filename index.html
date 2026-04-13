@@ -10,8 +10,9 @@
   .wrap { max-width: 720px; margin: 0 auto; }
   h1 { font-size: 22px; margin: 8px 0 4px; }
   .sub { font-size: 13px; color: #888; margin-bottom: 16px; }
-  .search-toggle { text-align: right; margin-bottom: 8px; }
-  .search-toggle button { background: none; border: none; color: #0C447C; font-size: 13px; cursor: pointer; padding: 4px 8px; }
+  .top-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+  .top-actions button { background: none; border: 1px solid #D3D1C7; color: #444; font-size: 13px; cursor: pointer; padding: 6px 12px; border-radius: 8px; background: #fff; }
+  .top-actions button.primary { background: #2C2C2A; color: #fff; border-color: #2C2C2A; }
   .controls { display: none; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .controls.show { display: flex; }
   input, select { padding: 10px 12px; border: 1px solid #D3D1C7; border-radius: 8px; font-size: 14px; background: #fff; font-family: inherit; }
@@ -31,6 +32,20 @@
   .empty { text-align: center; color: #888; padding: 40px 0; font-size: 14px; }
   .count { font-size: 12px; color: #999; text-align: center; margin-top: 16px; }
   .loading { text-align: center; color: #888; padding: 40px 0; }
+
+  /* 點歌彈窗 */
+  .modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 10; align-items: center; justify-content: center; padding: 16px; }
+  .modal-bg.show { display: flex; }
+  .modal { background: #fff; border-radius: 12px; padding: 20px; max-width: 400px; width: 100%; }
+  .modal h2 { margin: 0 0 6px; font-size: 18px; }
+  .modal p { margin: 0 0 14px; font-size: 13px; color: #666; }
+  .modal input { width: 100%; margin-bottom: 12px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-actions button { padding: 9px 16px; border-radius: 8px; border: 1px solid #D3D1C7; background: #fff; cursor: pointer; font-size: 14px; }
+  .modal-actions button.primary { background: #2C2C2A; color: #fff; border-color: #2C2C2A; }
+  .modal-status { font-size: 13px; margin-top: 8px; }
+  .modal-status.ok { color: #085041; }
+  .modal-status.err { color: #791F1F; }
 </style>
 </head>
 <body>
@@ -38,7 +53,8 @@
   <h1>寶寶勇士樂譜庫</h1>
   <p class="sub">點圖片即可下載 · 手機長按存到相簿</p>
 
-  <div class="search-toggle">
+  <div class="top-actions">
+    <button class="primary" id="requestBtn">🎵 我想要這首譜</button>
     <button id="toggleSearch">🔍 搜尋</button>
   </div>
 
@@ -55,15 +71,29 @@
   <p class="count" id="count"></p>
 </div>
 
+<!-- 點歌彈窗 -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2>🎵 點歌</h2>
+    <p>告訴老師你想要哪首歌的譜，老師會盡快寫好上傳～</p>
+    <input type="text" id="songInput" placeholder="請輸入歌名" />
+    <div class="modal-actions">
+      <button id="cancelBtn">取消</button>
+      <button class="primary" id="submitBtn">送出</button>
+    </div>
+    <div class="modal-status" id="modalStatus"></div>
+  </div>
+</div>
+
 <script>
-  // 換成你的 GAS 網址 + ?api=list
-  const API = 'https://script.google.com/macros/s/AKfycbwDzqeKKe-ER3OoipeptQXPe2izLp7YU0PZNYHPulaqIDdiHC7e_ZTWUmvpB4zr0nV_/exec?api=list';
+  const BASE = 'https://script.google.com/macros/s/AKfycbwDzqeKKe-ER3OoipeptQXPe2izLp7YU0PZNYHPulaqIDdiHC7e_ZTWUmvpB4zr0nV_/exec';
+  const API_LIST = BASE + '?api=list';
 
   let songs = [];
 
   async function loadSongs() {
     try {
-      const res = await fetch(API);
+      const res = await fetch(API_LIST);
       const data = await res.json();
       if (data.success) {
         songs = data.songs.reverse();
@@ -121,11 +151,64 @@
     });
   }
 
+  // 搜尋
   document.getElementById('toggleSearch').addEventListener('click', function() {
     document.getElementById('controls').classList.toggle('show');
   });
   document.getElementById('search').addEventListener('input', render);
   document.getElementById('filter').addEventListener('change', render);
+
+  // 點歌彈窗
+  const modal = document.getElementById('modal');
+  const songInput = document.getElementById('songInput');
+  const modalStatus = document.getElementById('modalStatus');
+
+  document.getElementById('requestBtn').addEventListener('click', function() {
+    songInput.value = '';
+    modalStatus.textContent = '';
+    modalStatus.className = 'modal-status';
+    modal.classList.add('show');
+    setTimeout(function() { songInput.focus(); }, 100);
+  });
+
+  document.getElementById('cancelBtn').addEventListener('click', function() {
+    modal.classList.remove('show');
+  });
+
+  document.getElementById('submitBtn').addEventListener('click', async function() {
+    const name = songInput.value.trim();
+    if (!name) {
+      modalStatus.textContent = '請輸入歌名';
+      modalStatus.className = 'modal-status err';
+      return;
+    }
+
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = '送出中...';
+    modalStatus.textContent = '';
+
+    try {
+      const url = BASE + '?api=request&song=' + encodeURIComponent(name);
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.success) {
+        modalStatus.textContent = '✓ 送出成功！老闆收到囉';
+        modalStatus.className = 'modal-status ok';
+        setTimeout(function() { modal.classList.remove('show'); }, 1500);
+      } else {
+        modalStatus.textContent = '送出失敗：' + data.error;
+        modalStatus.className = 'modal-status err';
+      }
+    } catch (err) {
+      modalStatus.textContent = '連線失敗：' + err.message;
+      modalStatus.className = 'modal-status err';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '送出';
+  });
 
   loadSongs();
 </script>
