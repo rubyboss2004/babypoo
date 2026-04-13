@@ -5,57 +5,289 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>寶寶勇士樂譜庫</title>
 <style>
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; background: #F5F4EF; color: #2C2C2A; padding: 16px; }
-  .wrap { max-width: 720px; margin: 0 auto; }
-  h1 { font-size: 22px; margin: 8px 0 4px; }
-  .sub { font-size: 13px; color: #888; margin-bottom: 16px; }
-  .top-actions { display: flex; gap: 8px; margin-bottom: 12px; }
-  .top-actions button { background: none; border: 1px solid #D3D1C7; color: #444; font-size: 13px; cursor: pointer; padding: 6px 12px; border-radius: 8px; background: #fff; }
-  .top-actions button.primary { background: #2C2C2A; color: #fff; border-color: #2C2C2A; }
-  .controls { display: none; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: linear-gradient(180deg, #FAF8F3 0%, #F0EDE4 100%);
+    background-attachment: fixed;
+    color: #2C2C2A;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 24px 0 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #E5E3DB;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: #2C2C2A;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+  }
+  h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+  .tagline { font-size: 13px; color: #888; margin-top: 4px; }
+
+  /* Top actions */
+  .top-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #D3D1C7;
+    background: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { border-color: #888; }
+  .btn.primary {
+    background: #2C2C2A;
+    color: #fff;
+    border-color: #2C2C2A;
+    font-weight: 500;
+    flex: 1;
+    justify-content: center;
+  }
+  .btn.primary:hover { background: #444; }
+
+  /* Search controls */
+  .controls {
+    display: none;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #E5E3DB;
+    border-radius: 12px;
+    flex-wrap: wrap;
+  }
   .controls.show { display: flex; }
-  input, select { padding: 10px 12px; border: 1px solid #D3D1C7; border-radius: 8px; font-size: 14px; background: #fff; font-family: inherit; }
-  input { flex: 1; min-width: 180px; }
-  select { width: 110px; }
-  .card { background: #fff; border: 1px solid #E5E3DB; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
-  .card-head { padding: 14px 16px; }
-  .name { font-size: 16px; font-weight: 500; }
-  .meta { font-size: 12px; color: #666; margin-top: 4px; }
-  .tag { font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-left: 6px; vertical-align: middle; }
+  input, select {
+    padding: 10px 12px;
+    border: 1px solid #D3D1C7;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    font-family: inherit;
+  }
+  .controls input { flex: 1; min-width: 160px; }
+  .controls select { width: 110px; }
+
+  /* Song list */
+  .list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+  .list-title { font-size: 13px; color: #666; font-weight: 500; }
+  .count { font-size: 12px; color: #999; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #E5E3DB;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: #C8C5B9; }
+  .card.open { border-color: #2C2C2A; }
+
+  .card-head {
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    user-select: none;
+  }
+  .card-main { flex: 1; min-width: 0; }
+  .name {
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .meta {
+    font-size: 12px;
+    color: #888;
+    margin-top: 3px;
+  }
+  .tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
   .tag-fast { background: #FAEEDA; color: #854F0B; }
   .tag-slow { background: #E6F1FB; color: #0C447C; }
-  .badge-new { background: #E1F5EE; color: #085041; font-size: 11px; padding: 2px 8px; border-radius: 6px; margin-left: 6px; vertical-align: middle; }
-  .card-body { padding: 0 12px 12px; }
-  .card-body img { width: 100%; height: auto; display: block; border-radius: 6px; cursor: pointer; }
-  .hint { font-size: 11px; color: #888; text-align: center; margin: 8px 0 0; }
-  .empty { text-align: center; color: #888; padding: 40px 0; font-size: 14px; }
-  .count { font-size: 12px; color: #999; text-align: center; margin-top: 16px; }
-  .loading { text-align: center; color: #888; padding: 40px 0; }
+  .badge-new {
+    background: #E1F5EE;
+    color: #085041;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
+  .chevron {
+    font-size: 12px;
+    color: #999;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .card.open .chevron { transform: rotate(180deg); }
 
-  /* 點歌彈窗 */
-  .modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 10; align-items: center; justify-content: center; padding: 16px; }
+  .card-body {
+    padding: 0 16px 16px;
+    display: none;
+  }
+  .card.open .card-body { display: block; }
+  .card-body img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    border: 1px solid #E5E3DB;
+  }
+  .card-body .download-btn {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background: #2C2C2A;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 500;
+    text-decoration: none;
+    font-family: inherit;
+  }
+  .card-body .download-btn:hover { background: #444; }
+
+  .empty {
+    text-align: center;
+    color: #888;
+    padding: 48px 16px;
+    font-size: 14px;
+    background: #fff;
+    border: 1px dashed #D3D1C7;
+    border-radius: 12px;
+  }
+  .loading {
+    text-align: center;
+    color: #888;
+    padding: 48px 0;
+  }
+
+  /* Modal */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
   .modal-bg.show { display: flex; }
-  .modal { background: #fff; border-radius: 12px; padding: 20px; max-width: 400px; width: 100%; }
-  .modal h2 { margin: 0 0 6px; font-size: 18px; }
-  .modal p { margin: 0 0 14px; font-size: 13px; color: #666; }
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+  }
+  .modal h2 { font-size: 18px; margin-bottom: 6px; }
+  .modal p { margin-bottom: 14px; font-size: 13px; color: #666; }
   .modal input { width: 100%; margin-bottom: 12px; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
-  .modal-actions button { padding: 9px 16px; border-radius: 8px; border: 1px solid #D3D1C7; background: #fff; cursor: pointer; font-size: 14px; }
-  .modal-actions button.primary { background: #2C2C2A; color: #fff; border-color: #2C2C2A; }
-  .modal-status { font-size: 13px; margin-top: 8px; }
+  .modal-actions button {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid #D3D1C7;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .modal-actions button.primary {
+    background: #2C2C2A;
+    color: #fff;
+    border-color: #2C2C2A;
+  }
+  .modal-status { font-size: 13px; margin-top: 10px; }
   .modal-status.ok { color: #085041; }
   .modal-status.err { color: #791F1F; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px 0;
+    font-size: 12px;
+    color: #999;
+    border-top: 1px solid #E5E3DB;
+  }
+
+  /* RWD - 平板以上 */
+  @media (min-width: 640px) {
+    .wrap { padding: 32px 24px 60px; }
+    h1 { font-size: 28px; }
+    .logo-icon { width: 44px; height: 44px; font-size: 22px; }
+    .name { font-size: 16px; }
+  }
+
+  /* RWD - 桌機 */
+  @media (min-width: 960px) {
+    .wrap { max-width: 820px; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>寶寶勇士樂譜庫</h1>
-  <p class="sub">點圖片即可下載 · 手機長按存到相簿</p>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🎸</div>
+      <h1>寶寶勇士樂譜庫</h1>
+    </div>
+    <div class="tagline">點開歌曲看譜，按下載即可存到裝置</div>
+  </div>
 
   <div class="top-actions">
-    <button class="primary" id="requestBtn">🎵 我想要這首譜</button>
-    <button id="toggleSearch">🔍 搜尋</button>
+    <button class="btn primary" id="requestBtn">🎵 我想要新的譜</button>
+    <button class="btn" id="toggleSearch">🔍 搜尋</button>
   </div>
 
   <div class="controls" id="controls">
@@ -67,14 +299,20 @@
     </select>
   </div>
 
+  <div class="list-header">
+    <div class="list-title">所有譜</div>
+    <div class="count" id="count"></div>
+  </div>
+
   <div id="list"><div class="loading">載入中...</div></div>
-  <p class="count" id="count"></p>
+
+  <div class="footer">寶寶勇士樂譜庫 · 由 老師 維護</div>
 </div>
 
 <!-- 點歌彈窗 -->
 <div class="modal-bg" id="modal">
   <div class="modal">
-    <h2>🎵 點歌</h2>
+    <h2>🎵 我想要新的譜</h2>
     <p>告訴老師你想要哪首歌的譜，老師會盡快寫好上傳～</p>
     <input type="text" id="songInput" placeholder="請輸入歌名" />
     <div class="modal-actions">
@@ -90,6 +328,7 @@
   const API_LIST = BASE + '?api=list';
 
   let songs = [];
+  let openId = null;
 
   async function loadSongs() {
     try {
@@ -118,17 +357,28 @@
     const list = document.getElementById('list');
     if (filtered.length === 0) {
       list.innerHTML = '<div class="empty">找不到符合的譜</div>';
-    } else {
-      list.innerHTML = filtered.map(function(s, idx) {
-        const tagClass = s.type === '快歌' ? 'tag-fast' : 'tag-slow';
-        const isNewest = idx === 0 && !q && t === 'all';
-        const newBadge = isNewest ? '<span class="badge-new">最新</span>' : '';
-        const imageHtml = s.imageUrl
-          ? '<div class="card-body"><a href="' + s.imageUrl + '" download="' + escapeHtml(s.title) + '.png" target="_blank"><img src="' + s.imageUrl + '" alt="' + escapeHtml(s.title) + '" /></a><p class="hint">點圖片下載 · 手機長按存到相簿</p></div>'
-          : '';
-        return '<div class="card">' +
-          '<div class="card-head">' +
-            '<div class="name">' + escapeHtml(s.title) +
+      document.getElementById('count').textContent = '';
+      return;
+    }
+
+    list.innerHTML = filtered.map(function(s, idx) {
+      const tagClass = s.type === '快歌' ? 'tag-fast' : 'tag-slow';
+      const isNewest = idx === 0 && !q && t === 'all';
+      const newBadge = isNewest ? '<span class="badge-new">最新</span>' : '';
+      const isOpen = openId === s.id;
+      const safeTitle = escapeHtml(s.title);
+      const body = s.imageUrl ? (
+        '<div class="card-body">' +
+          '<img src="' + s.imageUrl + '" alt="' + safeTitle + '" />' +
+          '<a class="download-btn" href="' + s.imageUrl + '" download="' + safeTitle + '.png" target="_blank">⬇ 下載譜面</a>' +
+        '</div>'
+      ) : '';
+
+      return '<div class="card' + (isOpen ? ' open' : '') + '">' +
+        '<div class="card-head" onclick="toggle(' + s.id + ')">' +
+          '<div class="card-main">' +
+            '<div class="name">' +
+              safeTitle +
               '<span class="tag ' + tagClass + '">' + escapeHtml(s.type) + '</span>' +
               newBadge +
             '</div>' +
@@ -138,11 +388,18 @@
               (s.bpm ? ' · ' + escapeHtml(s.bpm) + ' BPM' : '') +
             '</div>' +
           '</div>' +
-          imageHtml +
-        '</div>';
-      }).join('');
-    }
+          '<span class="chevron">▼</span>' +
+        '</div>' +
+        body +
+      '</div>';
+    }).join('');
+
     document.getElementById('count').textContent = '共 ' + filtered.length + ' 首';
+  }
+
+  function toggle(id) {
+    openId = openId === id ? null : id;
+    render();
   }
 
   function escapeHtml(s) {
@@ -173,6 +430,11 @@
 
   document.getElementById('cancelBtn').addEventListener('click', function() {
     modal.classList.remove('show');
+  });
+
+  // 點彈窗背景也能關閉
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.classList.remove('show');
   });
 
   document.getElementById('submitBtn').addEventListener('click', async function() {
