@@ -22,15 +22,15 @@
   .btn { padding: 10px 16px; border-radius: 10px; border: 1px solid #E0D1B0; background: #FFFEF9; font-size: 14px; font-family: inherit; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; color: #6B5740; }
   .btn:hover { border-color: #C2956B; color: #3D2E1F; }
   .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
-  .btn.primary { background: #E8A87C; color: #fff; border-color: #E8A87C; font-weight: 500; flex: 1; justify-content: center; }
+  .btn.primary { background: #E8A87C; color: #fff; border-color: #E8A87C; font-weight: 500; flex: 1; justify-content: center; min-width: 160px; }
   .btn.primary:hover { background: #D89567; border-color: #D89567; color: #fff; }
   .btn.primary svg { stroke: #fff; }
 
   /* Search controls */
   .controls { display: none; gap: 8px; margin-bottom: 16px; padding: 12px; background: #FFFEF9; border: 1px solid #E8DCC0; border-radius: 12px; flex-wrap: wrap; }
   .controls.show { display: flex; }
-  input, select { padding: 10px 12px; border: 1px solid #E0D1B0; border-radius: 8px; font-size: 14px; background: #fff; font-family: inherit; color: #3D2E1F; }
-  input:focus, select:focus { outline: none; border-color: #E8A87C; }
+  input, select, textarea { padding: 10px 12px; border: 1px solid #E0D1B0; border-radius: 8px; font-size: 14px; background: #fff; font-family: inherit; color: #3D2E1F; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #E8A87C; }
   .controls input { flex: 1; min-width: 160px; }
   .controls select { width: 110px; }
 
@@ -65,14 +65,15 @@
   .empty { text-align: center; color: #9C8568; padding: 48px 16px; font-size: 14px; background: #FFFEF9; border: 1px dashed #E0D1B0; border-radius: 12px; }
   .loading { text-align: center; color: #9C8568; padding: 48px 0; }
 
-  /* Modals */
+  /* 基本 modal(點歌用) */
   .modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(61,46,31,0.5); z-index: 10; align-items: center; justify-content: center; padding: 16px; }
   .modal-bg.show { display: flex; }
   .modal { background: #FFFEF9; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
   .modal h2 { font-size: 18px; margin-bottom: 6px; color: #3D2E1F; display: flex; align-items: center; gap: 8px; }
   .modal h2 svg { width: 20px; height: 20px; color: #E8A87C; }
   .modal p { margin-bottom: 14px; font-size: 13px; color: #6B5740; }
-  .modal input { width: 100%; margin-bottom: 12px; }
+  .modal input, .modal textarea { width: 100%; margin-bottom: 12px; }
+  .modal textarea { min-height: 90px; resize: vertical; font-family: inherit; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
   .modal-actions button { padding: 9px 18px; border-radius: 8px; border: 1px solid #E0D1B0; background: #FFFEF9; cursor: pointer; font-size: 14px; font-family: inherit; color: #6B5740; }
   .modal-actions button.primary { background: #E8A87C; color: #fff; border-color: #E8A87C; }
@@ -80,11 +81,11 @@
   .modal-status.ok { color: #085041; }
   .modal-status.err { color: #791F1F; }
 
-  /* Help modal */
+  /* 大 modal(使用說明 + QA) */
   .help-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(61,46,31,0.5); z-index: 20; align-items: flex-start; justify-content: center; padding: 16px; overflow-y: auto; }
   .help-bg.show { display: flex; }
   .help-modal { background: #FFFEF9; border-radius: 16px; padding: 24px 24px 28px; max-width: 560px; width: 100%; margin: 16px auto; position: relative; }
-  .help-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: none; background: #F2EAD3; border-radius: 50%; cursor: pointer; color: #6B5740; display: flex; align-items: center; justify-content: center; }
+  .help-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: none; background: #F2EAD3; border-radius: 50%; cursor: pointer; color: #6B5740; display: flex; align-items: center; justify-content: center; z-index: 2; }
   .help-close:hover { background: #E8DCC0; color: #3D2E1F; }
   .help-close svg { width: 14px; height: 14px; }
   .help-modal h2 { font-size: 20px; margin-bottom: 4px; padding-right: 36px; color: #3D2E1F; display: flex; align-items: center; gap: 8px; }
@@ -104,6 +105,27 @@
   .help-tab-content { display: none; background: #FAF0E1; padding: 12px 14px; border-radius: 8px; }
   .help-tab-content.active { display: block; }
 
+  /* QA 列表(modal 內) */
+  .qa-ask-box { background: #FAF0E1; border: 1px solid #E8DCC0; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+  .qa-ask-box input, .qa-ask-box textarea { width: 100%; margin-bottom: 8px; }
+  .qa-ask-box textarea { min-height: 70px; resize: vertical; }
+  .qa-ask-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .qa-ask-actions .ask-status { font-size: 12px; flex: 1; }
+  .qa-ask-actions .ask-status.ok { color: #085041; }
+  .qa-ask-actions .ask-status.err { color: #791F1F; }
+  .qa-ask-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #E8A87C; background: #E8A87C; color: #fff; cursor: pointer; font-size: 14px; font-family: inherit; font-weight: 500; }
+  .qa-ask-btn:hover { background: #D89567; }
+  .qa-ask-btn:disabled { opacity: 0.5; cursor: wait; }
+
+  .qa-item { background: #FFFEF9; border: 1px solid #E8DCC0; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .qa-item-head { font-size: 12px; color: #9C8568; margin-bottom: 6px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .qa-badge-pending { background: #FAEEDA; color: #854F0B; font-size: 11px; padding: 1px 7px; border-radius: 5px; font-weight: 500; }
+  .qa-badge-replied { background: #E1F5EE; color: #085041; font-size: 11px; padding: 1px 7px; border-radius: 5px; font-weight: 500; }
+  .qa-question { font-size: 14px; color: #3D2E1F; line-height: 1.5; white-space: pre-wrap; margin-bottom: 6px; }
+  .qa-reply { background: #FAF0E1; border-left: 3px solid #E8A87C; padding: 8px 10px; border-radius: 4px; font-size: 13px; color: #6B5740; line-height: 1.6; white-space: pre-wrap; }
+  .qa-reply-label { font-size: 11px; color: #9C8568; font-weight: 500; margin-bottom: 3px; }
+  .qa-pending-text { font-size: 13px; color: #9C8568; font-style: italic; }
+
   .footer { text-align: center; margin-top: 40px; padding: 20px 0; font-size: 12px; color: #B8A788; border-top: 1px solid #E8DCC0; }
 
   @media (min-width: 640px) { .wrap { padding: 32px 24px 60px; } h1 { font-size: 28px; } .logo-icon { width: 52px; height: 52px; } .logo-icon svg { width: 30px; height: 30px; } .name { font-size: 16px; } }
@@ -112,34 +134,26 @@
 </head>
 <body>
 
-<!-- SVG Icon 集中定義（隱藏） -->
 <svg width="0" height="0" style="position: absolute;">
   <defs>
     <symbol id="i-guitar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14.5 7.5L18 4l2 2-3.5 3.5"/>
-      <path d="M13 9l2 2"/>
-      <circle cx="9" cy="15" r="5"/>
-      <circle cx="9" cy="15" r="1.5"/>
-      <path d="M11 13l3.5-3.5"/>
+      <path d="M14.5 7.5L18 4l2 2-3.5 3.5"/><path d="M13 9l2 2"/><circle cx="9" cy="15" r="5"/><circle cx="9" cy="15" r="1.5"/><path d="M11 13l3.5-3.5"/>
     </symbol>
     <symbol id="i-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M9 18V5l12-2v13"/>
-      <circle cx="6" cy="18" r="3"/>
-      <circle cx="18" cy="16" r="3"/>
+      <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
     </symbol>
     <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="7"/>
-      <path d="M21 21l-4.3-4.3"/>
+      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
     </symbol>
     <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="9"/>
-      <path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4"/>
-      <circle cx="12" cy="17" r="0.5" fill="currentColor"/>
+      <circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      <path d="M8 9h8M8 13h5"/>
     </symbol>
     <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 3v13"/>
-      <path d="M7 11l5 5 5-5"/>
-      <path d="M5 21h14"/>
+      <path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/>
     </symbol>
     <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M6 9l6 6 6-6"/>
@@ -148,18 +162,13 @@
       <path d="M18 6L6 18M6 6l12 12"/>
     </symbol>
     <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 4v16a2 2 0 002 2h14V4H6a2 2 0 00-2 2z"/>
-      <path d="M4 4v16a2 2 0 012-2h14"/>
+      <path d="M4 4v16a2 2 0 002 2h14V4H6a2 2 0 00-2 2z"/><path d="M4 4v16a2 2 0 012-2h14"/>
     </symbol>
     <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="6" y="2" width="12" height="20" rx="2"/>
-      <path d="M11 18h2"/>
+      <rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/>
     </symbol>
     <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-    </symbol>
-    <symbol id="i-wave" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M2 12h2l3-9 4 18 3-9h8"/>
     </symbol>
   </defs>
 </svg>
@@ -170,11 +179,12 @@
       <div class="logo-icon"><svg><use href="#i-guitar"/></svg></div>
       <h1>寶寶勇士樂譜庫</h1>
     </div>
-    <div class="tagline">點開歌曲看譜，按下載即可存到裝置</div>
+    <div class="tagline">點開歌曲看譜,按下載即可存到裝置</div>
   </div>
 
   <div class="top-actions">
     <button class="btn primary" id="requestBtn"><svg><use href="#i-music"/></svg>我想要新的譜</button>
+    <button class="btn primary" id="qaBtn" style="background:#C2956B;border-color:#C2956B;"><svg><use href="#i-chat"/></svg>常見問答</button>
     <button class="btn" id="toggleSearch"><svg><use href="#i-search"/></svg>搜尋</button>
     <button class="btn" id="helpBtn"><svg><use href="#i-help"/></svg>使用說明</button>
   </div>
@@ -202,7 +212,7 @@
 <div class="modal-bg" id="modal">
   <div class="modal">
     <h2><svg><use href="#i-music"/></svg>我想要新的譜</h2>
-    <p>告訴老師你想要哪首歌的譜，老師會盡快寫好上傳～</p>
+    <p>告訴老師你想要哪首歌的譜,老師會盡快寫好上傳~</p>
     <input type="text" id="songInput" placeholder="請輸入歌名" />
     <div class="modal-actions">
       <button id="cancelBtn">取消</button>
@@ -212,35 +222,60 @@
   </div>
 </div>
 
+<!-- QA modal -->
+<div class="help-bg" id="qaModal">
+  <div class="help-modal">
+    <button class="help-close" id="qaClose"><svg><use href="#i-close"/></svg></button>
+    <h2><svg><use href="#i-chat"/></svg>常見問答</h2>
+    <p class="help-sub">有問題嗎?這裡找找看,沒有的話直接發問,老師看到會回覆喔~</p>
+
+    <div class="qa-ask-box">
+      <input type="text" id="qaNickname" placeholder="暱稱(可留空 = 匿名)" maxlength="20" />
+      <textarea id="qaQuestion" placeholder="想問什麼?" maxlength="500"></textarea>
+      <div class="qa-ask-actions">
+        <div class="ask-status" id="qaAskStatus"></div>
+        <button class="qa-ask-btn" id="qaAskBtn">送出問題</button>
+      </div>
+    </div>
+
+    <div id="qaItemList"><div class="loading">載入中...</div></div>
+  </div>
+</div>
+
 <!-- 使用說明 modal -->
 <div class="help-bg" id="helpModal">
   <div class="help-modal">
     <button class="help-close" id="helpClose"><svg><use href="#i-close"/></svg></button>
     <h2><svg><use href="#i-guitar"/></svg>歡迎來到寶寶勇士樂譜庫</h2>
-    <p class="help-sub">這裡有老師整理的詩歌譜，給寶寶勇士的樂手練習用。第一次來嗎？花一分鐘看看怎麼用～</p>
+    <p class="help-sub">這裡有老師整理的詩歌譜,給寶寶勇士的樂手練習用。第一次來嗎?花一分鐘看看怎麼用~</p>
 
     <div class="help-section">
-      <h3><svg><use href="#i-book"/></svg>怎麼看譜？</h3>
-      <p>在主頁上看到歌曲清單，<strong>點一下歌名</strong>就會展開譜面。再點一次就會收起來。</p>
+      <h3><svg><use href="#i-book"/></svg>怎麼看譜?</h3>
+      <p>在主頁上看到歌曲清單,<strong>點一下歌名</strong>就會展開譜面。再點一次就會收起來。</p>
     </div>
 
     <div class="help-section">
-      <h3><svg><use href="#i-download"/></svg>怎麼下載到手機/電腦？</h3>
-      <p>展開譜面後，下面有「<strong>下載 / 存到相簿</strong>」按鈕，按下去就會跳出選單。</p>
+      <h3><svg><use href="#i-download"/></svg>怎麼下載到手機/電腦?</h3>
+      <p>展開譜面後,下面有「<strong>下載 / 存到相簿</strong>」按鈕,按下去就會跳出選單。</p>
       <ul>
-        <li><strong>手機</strong>：選「儲存圖片」存到相簿</li>
-        <li><strong>電腦</strong>：圖片會直接下載到電腦</li>
+        <li><strong>手機</strong>:選「儲存圖片」存到相簿</li>
+        <li><strong>電腦</strong>:圖片會直接下載到電腦</li>
       </ul>
     </div>
 
     <div class="help-section">
-      <h3><svg><use href="#i-music"/></svg>找不到想要的歌怎麼辦？</h3>
-      <p>按上方的「<strong>我想要新的譜</strong>」，輸入歌名送出，老師會收到通知並盡快寫好上傳。</p>
+      <h3><svg><use href="#i-music"/></svg>找不到想要的歌怎麼辦?</h3>
+      <p>按上方的「<strong>我想要新的譜</strong>」,輸入歌名送出,老師會收到通知並盡快寫好上傳。</p>
     </div>
 
     <div class="help-section">
-      <h3><svg><use href="#i-phone"/></svg>把網頁加到主畫面，下次更快打開</h3>
-      <p>加到主畫面後，就像 App 一樣點一下就能用，不用再開瀏覽器找書籤～</p>
+      <h3><svg><use href="#i-chat"/></svg>有其他問題?</h3>
+      <p>按「<strong>常見問答</strong>」,看看有沒有人問過同樣的問題,沒有的話可以直接在那邊發問,老師會回覆。</p>
+    </div>
+
+    <div class="help-section">
+      <h3><svg><use href="#i-phone"/></svg>把網頁加到主畫面,下次更快打開</h3>
+      <p>加到主畫面後,就像 App 一樣點一下就能用,不用再開瀏覽器找書籤~</p>
 
       <div class="help-tabs">
         <button class="help-tab active" data-tab="ios">iPhone</button>
@@ -249,39 +284,39 @@
       </div>
 
       <div class="help-tab-content active" id="tab-ios">
-        <strong>iPhone（Safari）</strong>
+        <strong>iPhone(Safari)</strong>
         <ol>
-          <li>用 <strong>Safari</strong> 打開這個網頁（不要用 LINE 內建瀏覽器）</li>
-          <li>按螢幕下方中間的「<strong>分享</strong>」按鈕（向上箭頭的圖示）</li>
-          <li>往下捲，選「<strong>加入主畫面</strong>」</li>
+          <li>用 <strong>Safari</strong> 打開這個網頁(不要用 LINE 內建瀏覽器)</li>
+          <li>按螢幕下方中間的「<strong>分享</strong>」按鈕(向上箭頭的圖示)</li>
+          <li>往下捲,選「<strong>加入主畫面</strong>」</li>
           <li>確認名稱後按右上角的「<strong>新增</strong>」</li>
         </ol>
       </div>
 
       <div class="help-tab-content" id="tab-android">
-        <strong>Android（Chrome）</strong>
+        <strong>Android(Chrome)</strong>
         <ol>
           <li>用 <strong>Chrome</strong> 打開這個網頁</li>
-          <li>按右上角的「<strong>⋮</strong>」（三個點）</li>
+          <li>按右上角的「<strong>⋮</strong>」(三個點)</li>
           <li>選「<strong>加到主畫面</strong>」或「<strong>安裝應用程式</strong>」</li>
           <li>按「新增」就完成了</li>
         </ol>
       </div>
 
       <div class="help-tab-content" id="tab-pc">
-        <strong>電腦（Chrome / Edge）</strong>
+        <strong>電腦(Chrome / Edge)</strong>
         <ol>
-          <li>網址列右邊找到「<strong>安裝</strong>」圖示（一個方框加箭頭）</li>
+          <li>網址列右邊找到「<strong>安裝</strong>」圖示(一個方框加箭頭)</li>
           <li>按下去 → 點「<strong>安裝</strong>」</li>
           <li>之後桌面就會有捷徑可以直接打開</li>
         </ol>
-        <p style="margin-top: 8px; font-size: 13px; color: #9C8568;">如果沒看到安裝按鈕，加到書籤也可以喔～</p>
+        <p style="margin-top: 8px; font-size: 13px; color: #9C8568;">如果沒看到安裝按鈕,加到書籤也可以喔~</p>
       </div>
     </div>
 
     <div class="help-section">
-      <h3><svg><use href="#i-heart"/></svg>有問題？</h3>
-      <p>找老師反應就可以了～</p>
+      <h3><svg><use href="#i-heart"/></svg>有問題?</h3>
+      <p>找老師反應就可以了~</p>
     </div>
   </div>
 </div>
@@ -289,6 +324,7 @@
 <script>
 const BASE = 'https://script.google.com/macros/s/AKfycbwDzqeKKe-ER3OoipeptQXPe2izLp7YU0PZNYHPulaqIDdiHC7e_ZTWUmvpB4zr0nV_/exec';
 const API_LIST = BASE + '?api=list';
+const API_QA_LIST = BASE + '?api=qa_list';
 let songs = [];
 let openId = null;
 
@@ -297,9 +333,9 @@ async function loadSongs() {
     const res = await fetch(API_LIST);
     const data = await res.json();
     if (data.success) { songs = data.songs.reverse(); render(); }
-    else { document.getElementById('list').innerHTML = '<div class="empty">載入失敗：' + data.error + '</div>'; }
+    else { document.getElementById('list').innerHTML = '<div class="empty">載入失敗:' + data.error + '</div>'; }
   } catch (err) {
-    document.getElementById('list').innerHTML = '<div class="empty">連線失敗：' + err.message + '</div>';
+    document.getElementById('list').innerHTML = '<div class="empty">連線失敗:' + err.message + '</div>';
   }
 }
 
@@ -390,6 +426,7 @@ document.getElementById('toggleSearch').addEventListener('click', function() {
 document.getElementById('search').addEventListener('input', render);
 document.getElementById('filter').addEventListener('change', render);
 
+// ========== 點歌 modal ==========
 const modal = document.getElementById('modal');
 const songInput = document.getElementById('songInput');
 const modalStatus = document.getElementById('modalStatus');
@@ -420,21 +457,115 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
     const res = await fetch(url);
     const data = await res.json();
     if (data.success) {
-      modalStatus.textContent = '✓ 送出成功！老師收到囉';
+      modalStatus.textContent = '✓ 送出成功!老師收到囉';
       modalStatus.className = 'modal-status ok';
       setTimeout(function() { modal.classList.remove('show'); }, 1500);
     } else {
-      modalStatus.textContent = '送出失敗：' + data.error;
+      modalStatus.textContent = '送出失敗:' + data.error;
       modalStatus.className = 'modal-status err';
     }
   } catch (err) {
-    modalStatus.textContent = '連線失敗：' + err.message;
+    modalStatus.textContent = '連線失敗:' + err.message;
     modalStatus.className = 'modal-status err';
   }
   btn.disabled = false;
   btn.textContent = '送出';
 });
 
+// ========== QA modal ==========
+const qaModal = document.getElementById('qaModal');
+const qaItemList = document.getElementById('qaItemList');
+const qaNickname = document.getElementById('qaNickname');
+const qaQuestion = document.getElementById('qaQuestion');
+const qaAskStatus = document.getElementById('qaAskStatus');
+const qaAskBtn = document.getElementById('qaAskBtn');
+
+document.getElementById('qaBtn').addEventListener('click', function() {
+  qaModal.classList.add('show');
+  loadQaList();
+});
+document.getElementById('qaClose').addEventListener('click', function() { qaModal.classList.remove('show'); });
+qaModal.addEventListener('click', function(e) { if (e.target === qaModal) qaModal.classList.remove('show'); });
+
+async function loadQaList() {
+  qaItemList.innerHTML = '<div class="loading">載入中...</div>';
+  try {
+    const res = await fetch(API_QA_LIST);
+    const data = await res.json();
+    if (!data.success) {
+      qaItemList.innerHTML = '<div class="empty">載入失敗:' + data.error + '</div>';
+      return;
+    }
+    renderQaList(data.items);
+  } catch (err) {
+    qaItemList.innerHTML = '<div class="empty">連線失敗:' + err.message + '</div>';
+  }
+}
+
+function renderQaList(items) {
+  if (!items || items.length === 0) {
+    qaItemList.innerHTML = '<div class="empty" style="padding:24px;">還沒有問題,你可以當第一個發問的人~</div>';
+    return;
+  }
+  // 新的在上面
+  items.sort(function(a, b) { return b.id - a.id; });
+
+  qaItemList.innerHTML = items.map(function(it) {
+    const replied = !!it.reply;
+    const badge = replied
+      ? '<span class="qa-badge-replied">已回覆</span>'
+      : '<span class="qa-badge-pending">待回覆</span>';
+    const replyBlock = replied
+      ? '<div class="qa-reply"><div class="qa-reply-label">老師回覆 · ' + escapeHtml(it.replyTime || '') + '</div>' + escapeHtml(it.reply) + '</div>'
+      : '<div class="qa-pending-text">老師還沒回覆,再等等喔~</div>';
+
+    return '<div class="qa-item">' +
+      '<div class="qa-item-head">' +
+        badge +
+        '<span>' + escapeHtml(it.nickname) + '</span>' +
+        '<span>' + escapeHtml(it.time) + '</span>' +
+      '</div>' +
+      '<div class="qa-question">Q: ' + escapeHtml(it.question) + '</div>' +
+      replyBlock +
+    '</div>';
+  }).join('');
+}
+
+qaAskBtn.addEventListener('click', async function() {
+  const nick = qaNickname.value.trim();
+  const question = qaQuestion.value.trim();
+  if (!question) {
+    qaAskStatus.textContent = '請輸入問題';
+    qaAskStatus.className = 'ask-status err';
+    return;
+  }
+  qaAskBtn.disabled = true;
+  qaAskBtn.textContent = '送出中...';
+  qaAskStatus.textContent = '';
+  try {
+    const url = BASE + '?api=qa_ask&nickname=' + encodeURIComponent(nick) + '&question=' + encodeURIComponent(question);
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success) {
+      qaAskStatus.textContent = '✓ 送出成功!';
+      qaAskStatus.className = 'ask-status ok';
+      qaQuestion.value = '';
+      qaNickname.value = '';
+      loadQaList();
+      setTimeout(function() { qaAskStatus.textContent = ''; }, 3000);
+    } else {
+      qaAskStatus.textContent = '失敗:' + data.error;
+      qaAskStatus.className = 'ask-status err';
+    }
+  } catch (err) {
+    qaAskStatus.textContent = '連線失敗:' + err.message;
+    qaAskStatus.className = 'ask-status err';
+  }
+  qaAskBtn.disabled = false;
+  qaAskBtn.textContent = '送出問題';
+});
+
+// ========== 使用說明 modal ==========
 const helpModal = document.getElementById('helpModal');
 const HELP_SEEN_KEY = 'baowarriors_help_seen';
 
