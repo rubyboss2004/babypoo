@@ -46,6 +46,8 @@
   .card-body .download-btn:hover { border-color: #2C2C2A; background: #FAF8F3; }
   .empty { text-align: center; color: #888; padding: 48px 16px; font-size: 14px; background: #fff; border: 1px dashed #D3D1C7; border-radius: 12px; }
   .loading { text-align: center; color: #888; padding: 48px 0; }
+
+  /* 點歌 modal */
   .modal-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10; align-items: center; justify-content: center; padding: 16px; }
   .modal-bg.show { display: flex; }
   .modal { background: #fff; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
@@ -58,6 +60,27 @@
   .modal-status { font-size: 13px; margin-top: 10px; }
   .modal-status.ok { color: #085041; }
   .modal-status.err { color: #791F1F; }
+
+  /* 使用說明 modal */
+  .help-bg { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 20; align-items: flex-start; justify-content: center; padding: 16px; overflow-y: auto; }
+  .help-bg.show { display: flex; }
+  .help-modal { background: #fff; border-radius: 16px; padding: 24px 24px 28px; max-width: 560px; width: 100%; margin: 16px auto; position: relative; }
+  .help-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: none; background: #F0EDE4; border-radius: 50%; cursor: pointer; font-size: 16px; color: #666; display: flex; align-items: center; justify-content: center; }
+  .help-close:hover { background: #E5E3DB; color: #2C2C2A; }
+  .help-modal h2 { font-size: 20px; margin-bottom: 4px; padding-right: 36px; }
+  .help-modal .help-sub { font-size: 13px; color: #888; margin-bottom: 20px; }
+  .help-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #F0EDE4; }
+  .help-section:last-child { border-bottom: none; padding-bottom: 0; }
+  .help-section h3 { font-size: 15px; margin-bottom: 8px; color: #2C2C2A; display: flex; align-items: center; gap: 6px; }
+  .help-section p { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 6px; }
+  .help-section ol, .help-section ul { font-size: 14px; color: #555; line-height: 1.7; padding-left: 20px; }
+  .help-section li { margin-bottom: 3px; }
+  .help-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .help-tab { padding: 6px 12px; border-radius: 6px; border: 1px solid #D3D1C7; background: #fff; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .help-tab.active { background: #2C2C2A; color: #fff; border-color: #2C2C2A; }
+  .help-tab-content { display: none; background: #FAF8F3; padding: 12px 14px; border-radius: 8px; }
+  .help-tab-content.active { display: block; }
+
   .footer { text-align: center; margin-top: 40px; padding: 20px 0; font-size: 12px; color: #999; border-top: 1px solid #E5E3DB; }
   @media (min-width: 640px) { .wrap { padding: 32px 24px 60px; } h1 { font-size: 28px; } .logo-icon { width: 44px; height: 44px; font-size: 22px; } .name { font-size: 16px; } }
   @media (min-width: 960px) { .wrap { max-width: 820px; } }
@@ -76,6 +99,7 @@
   <div class="top-actions">
     <button class="btn primary" id="requestBtn">🎵 我想要新的譜</button>
     <button class="btn" id="toggleSearch">🔍 搜尋</button>
+    <button class="btn" id="helpBtn">❓ 使用說明</button>
   </div>
 
   <div class="controls" id="controls">
@@ -97,6 +121,7 @@
   <div class="footer">寶寶勇士樂譜庫 · 由 Ruby 維護</div>
 </div>
 
+<!-- 點歌 modal -->
 <div class="modal-bg" id="modal">
   <div class="modal">
     <h2>🎵 我想要新的譜</h2>
@@ -107,6 +132,80 @@
       <button class="primary" id="submitBtn">送出</button>
     </div>
     <div class="modal-status" id="modalStatus"></div>
+  </div>
+</div>
+
+<!-- 使用說明 modal -->
+<div class="help-bg" id="helpModal">
+  <div class="help-modal">
+    <button class="help-close" id="helpClose">✕</button>
+    <h2>👋 歡迎來到寶寶勇士樂譜庫</h2>
+    <p class="help-sub">這裡有老師整理的詩歌譜，給寶寶勇士的樂手練習用。第一次來嗎？花一分鐘看看怎麼用～</p>
+
+    <div class="help-section">
+      <h3>📖 怎麼看譜？</h3>
+      <p>在主頁上看到歌曲清單，<strong>點一下歌名</strong>就會展開譜面。再點一次就會收起來。</p>
+    </div>
+
+    <div class="help-section">
+      <h3>⬇ 怎麼下載到手機/電腦？</h3>
+      <p>展開譜面後，下面有一個「<strong>下載 / 存到相簿</strong>」按鈕，按下去就會跳出選單。</p>
+      <ul>
+        <li><strong>手機</strong>：選「儲存圖片」存到相簿</li>
+        <li><strong>電腦</strong>：圖片會直接下載到電腦</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>🎵 找不到想要的歌怎麼辦？</h3>
+      <p>按上方的「<strong>🎵 我想要新的譜</strong>」，輸入歌名送出，老師會收到通知並盡快寫好上傳。</p>
+    </div>
+
+    <div class="help-section">
+      <h3>📱 把網頁加到主畫面，下次更快打開</h3>
+      <p>加到主畫面後，就像 App 一樣點一下就能用，不用再開瀏覽器找書籤～</p>
+
+      <div class="help-tabs">
+        <button class="help-tab active" data-tab="ios">iPhone</button>
+        <button class="help-tab" data-tab="android">Android</button>
+        <button class="help-tab" data-tab="pc">電腦</button>
+      </div>
+
+      <div class="help-tab-content active" id="tab-ios">
+        <strong>iPhone（Safari）</strong>
+        <ol>
+          <li>用 <strong>Safari</strong> 打開這個網頁（不要用 LINE 內建瀏覽器）</li>
+          <li>按螢幕下方中間的「<strong>分享</strong>」按鈕（向上箭頭的圖示）</li>
+          <li>往下捲，選「<strong>加入主畫面</strong>」</li>
+          <li>確認名稱後按右上角的「<strong>新增</strong>」</li>
+        </ol>
+      </div>
+
+      <div class="help-tab-content" id="tab-android">
+        <strong>Android（Chrome）</strong>
+        <ol>
+          <li>用 <strong>Chrome</strong> 打開這個網頁</li>
+          <li>按右上角的「<strong>⋮</strong>」（三個點）</li>
+          <li>選「<strong>加到主畫面</strong>」或「<strong>安裝應用程式</strong>」</li>
+          <li>按「新增」就完成了</li>
+        </ol>
+      </div>
+
+      <div class="help-tab-content" id="tab-pc">
+        <strong>電腦（Chrome / Edge）</strong>
+        <ol>
+          <li>網址列右邊找到「<strong>安裝</strong>」圖示（一個方框加箭頭）</li>
+          <li>按下去 → 點「<strong>安裝</strong>」</li>
+          <li>之後桌面就會有捷徑可以直接打開</li>
+        </ol>
+        <p style="margin-top: 8px; font-size: 13px; color: #888;">如果沒看到安裝按鈕，加到書籤也可以喔～</p>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>🙏 有問題？</h3>
+      <p>找老師反應就可以了～</p>
+    </div>
   </div>
 </div>
 
@@ -214,6 +313,7 @@ document.getElementById('toggleSearch').addEventListener('click', function() {
 document.getElementById('search').addEventListener('input', render);
 document.getElementById('filter').addEventListener('change', render);
 
+// 點歌 modal
 const modal = document.getElementById('modal');
 const songInput = document.getElementById('songInput');
 const modalStatus = document.getElementById('modalStatus');
@@ -264,6 +364,41 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
   btn.disabled = false;
   btn.textContent = '送出';
 });
+
+// 使用說明 modal
+const helpModal = document.getElementById('helpModal');
+const HELP_SEEN_KEY = 'baowarriors_help_seen';
+
+function openHelp() {
+  helpModal.classList.add('show');
+}
+function closeHelp() {
+  helpModal.classList.remove('show');
+  try { localStorage.setItem(HELP_SEEN_KEY, '1'); } catch(e) {}
+}
+
+document.getElementById('helpBtn').addEventListener('click', openHelp);
+document.getElementById('helpClose').addEventListener('click', closeHelp);
+helpModal.addEventListener('click', function(e) {
+  if (e.target === helpModal) closeHelp();
+});
+
+// 切換系統 tab
+document.querySelectorAll('.help-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.help-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.help-tab-content').forEach(function(c) { c.classList.remove('active'); });
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// 第一次來自動彈出
+try {
+  if (!localStorage.getItem(HELP_SEEN_KEY)) {
+    setTimeout(openHelp, 300);
+  }
+} catch(e) {}
 
 loadSongs();
 </script>
