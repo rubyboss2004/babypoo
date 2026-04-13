@@ -182,9 +182,9 @@
     width: 100%;
     margin-top: 10px;
     padding: 10px;
-    background: #2C2C2A;
-    color: #fff;
-    border: none;
+    background: #fff;
+    color: #2C2C2A;
+    border: 1px solid #D3D1C7;
     border-radius: 8px;
     font-size: 14px;
     cursor: pointer;
@@ -193,8 +193,7 @@
     text-decoration: none;
     font-family: inherit;
   }
-  .card-body .download-btn:hover { background: #444; }
-
+  .card-body .download-btn:hover { border-color: #2C2C2A; background: #FAF8F3; }
   .empty {
     text-align: center;
     color: #888;
@@ -306,7 +305,7 @@
 
   <div id="list"><div class="loading">載入中...</div></div>
 
-  <div class="footer">寶寶勇士樂譜庫 · 由 老師 維護</div>
+  <div class="footer">寶寶勇士樂譜庫 · 由 Ruby 維護</div>
 </div>
 
 <!-- 點歌彈窗 -->
@@ -370,7 +369,7 @@
       const body = s.imageUrl ? (
         '<div class="card-body">' +
           '<img src="' + s.imageUrl + '" alt="' + safeTitle + '" />' +
-          '<a class="download-btn" href="' + s.imageUrl + '" download="' + safeTitle + '.png" target="_blank">⬇ 下載譜面</a>' +
+          '<button class="download-btn" onclick="shareOrDownload(\'' + s.imageUrl + '\', \'' + safeTitle.replace(/'/g, "\\'") + '\')">⬇ 下載 / 存到相簿</button>' +
         '</div>'
       ) : '';
 
@@ -397,6 +396,31 @@
     document.getElementById('count').textContent = '共 ' + filtered.length + ' 首';
   }
 
+ async function shareOrDownload(imageUrl, title) {
+    try {
+      // 嘗試用 Web Share API（手機）
+      if (navigator.share && navigator.canShare) {
+        const res = await fetch(imageUrl);
+        const blob = await res.blob();
+        const file = new File([blob], title + '.png', { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: title });
+          return;
+        }
+      }
+    } catch (err) {
+      // 使用者取消分享或失敗，fallback 到下載
+    }
+    // Fallback：電腦或不支援的瀏覽器，直接下載
+    const a = document.createElement('a');
+    a.href = imageUrl;
+    a.download = title + '.png';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+ 
   function toggle(id) {
     openId = openId === id ? null : id;
     render();
