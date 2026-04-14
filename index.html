@@ -111,6 +111,18 @@
   .help-tab-content { display: none; background: #FAF0E1; padding: 12px 14px; border-radius: 8px; }
   .help-tab-content.active { display: block; }
 
+  /* 新功能通知 */
+  .btn.has-dot { position: relative; }
+  .btn.has-dot::after { content: ''; position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: #E8A87C; border-radius: 50%; border: 2px solid #FFFEF9; box-sizing: content-box; }
+  .wn-entry { padding: 14px 0; border-bottom: 1px solid #F2EAD3; }
+  .wn-entry:last-child { border-bottom: none; padding-bottom: 0; }
+  .wn-date { font-size: 12px; color: #B8A788; margin-bottom: 4px; letter-spacing: 0.5px; }
+  .wn-title { font-size: 15px; font-weight: 600; color: #3D2E1F; margin-bottom: 6px; }
+  .wn-body { font-size: 14px; color: #6B5740; line-height: 1.6; }
+  .wn-body ul { padding-left: 20px; margin-top: 4px; }
+  .wn-body li { margin-bottom: 2px; }
+  .wn-new-badge { display: inline-block; background: #E8A87C; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; font-weight: 500; letter-spacing: 0.5px; }
+
   .footer { text-align: center; margin-top: 40px; padding: 20px 0; font-size: 12px; color: #B8A788; border-top: 1px solid #E8DCC0; }
 
   @media (min-width: 640px) { .wrap { padding: 32px 24px 60px; } h1 { font-size: 28px; } .logo-icon { width: 52px; height: 52px; } .logo-icon svg { width: 30px; height: 30px; } .name { font-size: 16px; } }
@@ -132,6 +144,10 @@
     </symbol>
     <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>
+      <path d="M19 4l.7 1.8L21.5 6.5 19.7 7.2 19 9l-.7-1.8L16.5 6.5 18.3 5.8z"/>
     </symbol>
     <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/>
@@ -166,6 +182,7 @@
   <div class="top-actions">
     <button class="btn primary" id="requestBtn"><svg><use href="#i-music"/></svg>我想要新的譜</button>
     <button class="btn" id="toggleSearch"><svg><use href="#i-search"/></svg>搜尋</button>
+    <button class="btn" id="whatsnewBtn"><svg><use href="#i-sparkle"/></svg>新功能</button>
     <button class="btn" id="helpBtn"><svg><use href="#i-help"/></svg>使用說明</button>
   </div>
 
@@ -199,6 +216,16 @@
       <button class="primary" id="submitBtn">送出</button>
     </div>
     <div class="modal-status" id="modalStatus"></div>
+  </div>
+</div>
+
+<!-- 新功能 modal -->
+<div class="help-bg" id="whatsnewModal">
+  <div class="help-modal">
+    <button class="help-close" id="whatsnewClose"><svg><use href="#i-close"/></svg></button>
+    <h2><svg><use href="#i-sparkle"/></svg>新功能</h2>
+    <p class="help-sub">樂譜庫最近新增/改善的功能～</p>
+    <div id="whatsnewList"></div>
   </div>
 </div>
 
@@ -500,9 +527,106 @@ document.querySelectorAll('.help-tab').forEach(function(tab) {
   });
 });
 
+// ======= 新功能（Changelog）=======
+// 新增功能時把新的一筆加到陣列最上面，id 要是唯一的（用日期+序號最方便）
+const CHANGELOG = [
+  {
+    id: '2026-04-14-a',
+    date: '2026-04-14',
+    title: '🎹 可以切換 Key 了！',
+    body: '每首歌展開後，上方會有一排 Key 按鈕（C D E F G A B）。' +
+          '<ul>' +
+          '<li>點一下就立刻切換到那個 Key 的版本</li>' +
+          '<li>標 ★ 的是老師推薦的預設 Key，新手可以先用這個</li>' +
+          '<li>下載按鈕會下載你當前選的 Key 版本</li>' +
+          '</ul>'
+  },
+  {
+    id: '2026-04-10',
+    date: '2026-04-10',
+    title: '📖 加入使用說明',
+    body: '第一次用的樂手可以看使用說明，了解怎麼看譜、怎麼下載、怎麼把網頁加到主畫面當 App 用。'
+  },
+  {
+    id: '2026-04-05',
+    date: '2026-04-05',
+    title: '🔍 搜尋功能',
+    body: '現在可以按曲名或原唱搜尋譜，也可以篩選快歌/慢歌。'
+  },
+  {
+    id: '2026-04-01',
+    date: '2026-04-01',
+    title: '🎵 可以點歌了',
+    body: '找不到想要的譜？按上方「我想要新的譜」輸入歌名，老師會收到通知並盡快寫好上傳。'
+  },
+  {
+    id: '2026-03-25',
+    date: '2026-03-25',
+    title: '🎉 寶寶勇士樂譜庫上線！',
+    body: '給寶寶勇士敬拜團的樂譜庫正式上線～每首歌都有和弦譜可以下載到手機或電腦。'
+  }
+];
+
+const WN_SEEN_KEY = 'baowarriors_wn_seen';
+const WN_LATEST_ID = CHANGELOG.length > 0 ? CHANGELOG[0].id : '';
+
+function getSeenId() {
+  try { return localStorage.getItem(WN_SEEN_KEY) || ''; } catch (e) { return ''; }
+}
+function setSeenId(id) {
+  try { localStorage.setItem(WN_SEEN_KEY, id); } catch (e) {}
+}
+
+function renderWhatsnew() {
+  const seenId = getSeenId();
+  // 用時間順序決定「新」：seenId 之後的那些都標為新
+  let seenIdx = CHANGELOG.findIndex(function(x) { return x.id === seenId; });
+  if (seenIdx < 0) seenIdx = CHANGELOG.length;  // 從沒看過 → 全部都算新
+
+  const list = document.getElementById('whatsnewList');
+  list.innerHTML = CHANGELOG.map(function(entry, i) {
+    const isNew = i < seenIdx;
+    const newBadge = isNew ? '<span class="wn-new-badge">NEW</span>' : '';
+    return '<div class="wn-entry">' +
+      '<div class="wn-date">' + entry.date + '</div>' +
+      '<div class="wn-title">' + entry.title + newBadge + '</div>' +
+      '<div class="wn-body">' + entry.body + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function updateWhatsnewDot() {
+  const btn = document.getElementById('whatsnewBtn');
+  if (getSeenId() === WN_LATEST_ID) btn.classList.remove('has-dot');
+  else btn.classList.add('has-dot');
+}
+
+const whatsnewModal = document.getElementById('whatsnewModal');
+function openWhatsnew() {
+  renderWhatsnew();
+  whatsnewModal.classList.add('show');
+}
+function closeWhatsnew() {
+  whatsnewModal.classList.remove('show');
+  setSeenId(WN_LATEST_ID);
+  updateWhatsnewDot();
+}
+
+document.getElementById('whatsnewBtn').addEventListener('click', openWhatsnew);
+document.getElementById('whatsnewClose').addEventListener('click', closeWhatsnew);
+whatsnewModal.addEventListener('click', function(e) { if (e.target === whatsnewModal) closeWhatsnew(); });
+
+updateWhatsnewDot();
+
+// 第一次來先跳使用說明；之後每次有新版本就跳新功能
 try {
   if (!localStorage.getItem(HELP_SEEN_KEY)) {
     setTimeout(openHelp, 300);
+    // 第一次來也把新功能標記成已讀，不然看完使用說明還會再跳一次
+    setSeenId(WN_LATEST_ID);
+    updateWhatsnewDot();
+  } else if (getSeenId() !== WN_LATEST_ID) {
+    setTimeout(openWhatsnew, 300);
   }
 } catch(e) {}
 
