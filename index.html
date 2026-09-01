@@ -112,6 +112,29 @@
     background:#FFFEF9; cursor:pointer; font-size:14px; font-family:inherit; color:#6B5740; }
   .modal-actions button.primary { background:#E8A87C; color:#fff; border-color:#E8A87C; }
   .modal-status { font-size:13px; margin-top:10px; }
+  .help-bg { display:none; position:fixed; inset:0; background:rgba(61,46,31,.5); z-index:30;
+    align-items:flex-start; justify-content:center; padding:16px; overflow-y:auto; }
+  .help-bg.show { display:flex; }
+  .help { background:#FFFEF9; border-radius:16px; padding:24px 24px 28px; max-width:560px; width:100%;
+    margin:16px auto; position:relative; }
+  .help-close { position:absolute; top:12px; right:12px; width:32px; height:32px; border:none;
+    background:#F2EAD3; border-radius:50%; cursor:pointer; color:#6B5740;
+    display:flex; align-items:center; justify-content:center; }
+  .help-close svg { width:14px; height:14px; }
+  .help h2 { font-size:20px; margin-bottom:4px; padding-right:36px; }
+  .help .sub2 { font-size:13px; color:#9C8568; margin-bottom:18px; }
+  .hsec { margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid #F2EAD3; }
+  .hsec:last-child { border-bottom:none; padding-bottom:0; margin-bottom:0; }
+  .hsec h3 { font-size:15px; margin-bottom:6px; }
+  .hsec p, .hsec li { font-size:14px; color:#6B5740; line-height:1.7; }
+  .hsec ol, .hsec ul { padding-left:20px; }
+  .hsec strong { color:#3D2E1F; }
+  .htabs { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+  .htab { padding:6px 12px; border-radius:6px; border:1px solid #E0D1B0; background:#FFFEF9;
+    font-size:13px; cursor:pointer; font-family:inherit; color:#6B5740; }
+  .htab.on { background:#E8A87C; color:#fff; border-color:#E8A87C; }
+  .htc { display:none; background:#FAF0E1; padding:12px 14px; border-radius:8px; }
+  .htc.on { display:block; }
   .footer { text-align:center; margin-top:36px; padding:18px 0; font-size:12px; color:#B8A788; border-top:1px solid #E8DCC0; }
 </style>
 </head>
@@ -126,6 +149,10 @@
     <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 6L6 18M6 6l12 12"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M6 9l6 6 6-6"/></symbol>
 </defs></svg>
@@ -139,6 +166,7 @@
   <div class="top-actions">
     <button class="btn primary" id="requestBtn"><svg><use href="#i-music"/></svg>我想要新的譜</button>
     <button class="btn" id="toggleSearch"><svg><use href="#i-search"/></svg>搜尋</button>
+    <button class="btn" id="helpBtn"><svg><use href="#i-help"/></svg>使用說明</button>
   </div>
 
   <div class="controls" id="controls">
@@ -157,6 +185,53 @@
   <input type="text" id="songInput" placeholder="請輸入歌名" />
   <div class="modal-actions"><button id="cancelBtn">取消</button><button class="primary" id="submitBtn">送出</button></div>
   <div class="modal-status" id="modalStatus"></div>
+</div></div>
+
+<div class="help-bg" id="helpModal"><div class="help">
+  <button class="help-close" id="helpClose"><svg><use href="#i-close"/></svg></button>
+  <h2>歡迎來到寶寶勇士樂譜庫</h2>
+  <div class="sub2">這裡有老師整理的詩歌譜，給寶寶勇士的樂手練習用。第一次來嗎？花一分鐘看看怎麼用～</div>
+
+  <div class="hsec"><h3>怎麼看譜？</h3>
+    <p><strong>點一下歌名</strong>就會展開譜面，再點一次收起來。</p></div>
+
+  <div class="hsec"><h3>不好按？可以自己轉調</h3>
+    <p>譜的上方有一排工具：</p>
+    <ul>
+      <li><strong>− ／ ＋</strong>：升降半音，和弦會立刻全部跟著變</li>
+      <li><strong>↺</strong>：回到原本的調</li>
+      <li><strong>Capo 3　play C</strong>：告訴你夾第幾格、用哪個調的指型彈，就能只用好按的和弦</li>
+      <li><strong>A− ／ A＋</strong>：字太小可以放大</li>
+    </ul>
+    <p style="margin-top:6px;">歌名旁邊有紫色「<strong>可轉調</strong>」標籤的才能轉調。舊的譜只有圖片，沒有標籤。</p>
+    <p style="margin-top:6px;">如果那首歌同時有圖片版，工具列右邊會出現「<strong>圖</strong>」，可以切回去看老師原本排好的圖；在圖片版按「<strong>文字</strong>」再切回來。</p></div>
+
+  <div class="hsec"><h3>怎麼存到手機/電腦？</h3>
+    <p>按譜下面的「<strong>下載 / 存到相簿</strong>」，會把<strong>你現在轉到的那個調</strong>存成圖片。</p>
+    <ul><li><strong>手機</strong>：選「儲存圖片」存到相簿</li><li><strong>電腦</strong>：直接下載</li></ul></div>
+
+  <div class="hsec"><h3>找不到想要的歌？</h3>
+    <p>按上方「<strong>我想要新的譜</strong>」輸入歌名送出，老師會收到通知。搜尋也可以<strong>直接打歌詞</strong>找。</p></div>
+
+  <div class="hsec"><h3>把網頁加到主畫面，下次更快打開</h3>
+    <div class="htabs">
+      <button class="htab on" data-tab="ios">iPhone</button>
+      <button class="htab" data-tab="android">Android</button>
+      <button class="htab" data-tab="pc">電腦</button>
+    </div>
+    <div class="htc on" id="t-ios"><strong>iPhone（Safari）</strong>
+      <ol><li>用 <strong>Safari</strong> 打開（不要用 LINE 內建瀏覽器）</li>
+      <li>按下方中間的「<strong>分享</strong>」按鈕</li>
+      <li>往下捲，選「<strong>加入主畫面</strong>」</li>
+      <li>按右上角「<strong>新增</strong>」</li></ol></div>
+    <div class="htc" id="t-android"><strong>Android（Chrome）</strong>
+      <ol><li>用 <strong>Chrome</strong> 打開</li><li>按右上角「<strong>⋮</strong>」</li>
+      <li>選「<strong>加到主畫面</strong>」</li><li>按「新增」</li></ol></div>
+    <div class="htc" id="t-pc"><strong>電腦（Chrome / Edge）</strong>
+      <ol><li>網址列右邊找「<strong>安裝</strong>」圖示</li><li>按下去 → 「<strong>安裝</strong>」</li></ol>
+      <p style="margin-top:8px;font-size:13px;color:#9C8568;">沒看到的話，加書籤也可以～</p></div></div>
+
+  <div class="hsec"><h3>有問題？</h3><p>找老師反應就可以了～</p></div>
 </div></div>
 
 <script>
@@ -422,6 +497,25 @@ document.getElementById('submitBtn').onclick=async function(){
   }catch(e){ st2.textContent='連線失敗：'+e.message; st2.style.color='#791F1F'; }
   this.disabled=false; this.textContent='送出';
 };
+
+/* ---------- 使用說明 ---------- */
+const helpModal=document.getElementById('helpModal');
+const HELP_KEY='baowarriors_help_v2';
+function openHelp(){ helpModal.classList.add('show'); }
+function closeHelp(){ helpModal.classList.remove('show');
+  try{ localStorage.setItem(HELP_KEY,'1'); }catch(e){} }
+document.getElementById('helpBtn').onclick=openHelp;
+document.getElementById('helpClose').onclick=closeHelp;
+helpModal.onclick=e=>{ if(e.target===helpModal) closeHelp(); };
+document.querySelectorAll('.htab').forEach(tab=>{
+  tab.onclick=()=>{
+    document.querySelectorAll('.htab').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.htc').forEach(c=>c.classList.remove('on'));
+    tab.classList.add('on');
+    document.getElementById('t-'+tab.dataset.tab).classList.add('on');
+  };
+});
+try{ if(!localStorage.getItem(HELP_KEY)) setTimeout(openHelp,400); }catch(e){}
 
 load();
 </script>
