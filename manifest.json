@@ -1,0 +1,18 @@
+{
+  "name": "寶寶勇士樂譜庫",
+  "short_name": "寶寶勇士樂譜庫",
+  "description": "兒童牧區敬拜團的線上樂譜庫。點開就能看譜、自己轉調、存到手機相簿。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EFEEF3",
+  "theme_color": "#EFEEF3",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
