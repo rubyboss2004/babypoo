@@ -2,242 +2,427 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- viewport-fit=cover 一定要有，env() 才會回傳真的瀏海高度 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EFEEF3">
 <title>寶寶勇士樂譜庫</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
-    background:linear-gradient(180deg,#FAF6EC 0%,#F2EAD3 100%); background-attachment:fixed;
-    color:#3D2E1F; min-height:100vh; line-height:1.5; }
-  .wrap { max-width:760px; margin:0 auto; padding:20px 16px 60px; }
+/* ============================================================
+   寶寶勇士譜夾 · 前台
+   設計規格 v3。改顏色、改字，都只改下面這一段 :root。
+   ============================================================ */
+:root{
+  color-scheme:light;                /* 手機開深色模式也維持淺色 */
 
-  .header { text-align:center; padding:22px 0 18px; margin-bottom:18px; border-bottom:1px solid #E8DCC0; }
-  .logo { display:inline-flex; align-items:center; gap:12px; }
-  .logo-icon { width:44px; height:44px; background:#E8DCC0; border-radius:12px;
-    display:flex; align-items:center; justify-content:center; color:#C2956B; }
-  .logo-icon svg { width:26px; height:26px; }
-  h1 { font-size:24px; font-weight:600; letter-spacing:-.5px; }
-  .tagline { font-size:13px; color:#9C8568; margin-top:4px; }
+  --ground:#EFEEF3;
+  --au1:rgba(94,88,224,.16);
+  --au2:rgba(224,92,142,.11);
+  --au3:rgba(88,182,214,.11);
 
-  .top-actions { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
-  .btn { padding:10px 16px; border-radius:10px; border:1px solid #E0D1B0; background:#FFFEF9;
-    font-size:14px; font-family:inherit; cursor:pointer; display:inline-flex; align-items:center;
-    gap:6px; color:#6B5740; transition:all .15s; }
-  .btn:hover { border-color:#C2956B; color:#3D2E1F; }
-  .btn svg { width:16px; height:16px; flex-shrink:0; }
-  .btn.primary { background:#E8A87C; color:#fff; border-color:#E8A87C; font-weight:500; flex:1; justify-content:center; }
-  .btn.primary:hover { background:#D89567; color:#fff; }
-  .btn.primary svg { stroke:#fff; }
+  --glass:rgba(255,255,255,.72);
+  --glass-2:rgba(255,255,255,.50);
+  --glass-hi:rgba(255,255,255,.85);
+  --glass-edge:rgba(23,22,29,.09);
 
-  .controls { display:none; gap:8px; margin-bottom:14px; padding:12px; background:#FFFEF9;
-    border:1px solid #E8DCC0; border-radius:12px; flex-wrap:wrap; }
-  .controls.show { display:flex; }
-  input, select { padding:10px 12px; border:1px solid #E0D1B0; border-radius:8px; font-size:14px;
-    background:#fff; font-family:inherit; color:#3D2E1F; }
-  input:focus, select:focus { outline:none; border-color:#E8A87C; }
-  .controls input { flex:1; min-width:160px; }
-  .controls select { width:110px; }
+  --paper:#FFFFFF;
+  --ink:#17161D;
+  --ink-2:#4C4A58;
+  --muted:#8A8797;
 
-  .list-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:0 4px; }
-  .list-title { font-size:13px; color:#9C8568; font-weight:500; }
-  .count { font-size:12px; color:#B8A788; }
+  --brand:#4340B8;
+  --brand-soft:rgba(67,64,184,.10);
+  --on-brand:#FFFFFF;
 
-  .card { background:#FFFEF9; border:1px solid #E8DCC0; border-radius:12px; margin-bottom:8px; overflow:hidden; }
-  .card:hover { border-color:#D4BC93; }
-  .card.open { border-color:#E8A87C; }
-  .card-head { padding:14px 16px; cursor:pointer; display:flex; align-items:center; gap:12px; user-select:none; }
-  .card-main { flex:1; min-width:0; }
-  .name { font-size:15px; font-weight:500; display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
-  .meta { font-size:12px; color:#9C8568; margin-top:3px; }
-  .tag { font-size:11px; padding:2px 8px; border-radius:5px; font-weight:500; }
-  .tag-fast { background:#FAEEDA; color:#854F0B; }
-  .tag-slow { background:#E6F1FB; color:#0C447C; }
-  .badge-new { background:#E1F5EE; color:#085041; font-size:11px; padding:2px 8px; border-radius:5px; font-weight:500; }
-  .badge-text { background:#EFE8FA; color:#4B3A7A; font-size:11px; padding:2px 8px; border-radius:5px; font-weight:500; }
-  .chevron { color:#B8A788; transition:transform .2s; flex-shrink:0; display:flex; }
-  .chevron svg { width:14px; height:14px; }
-  .card.open .chevron { transform:rotate(180deg); color:#E8A87C; }
-  .card-body { padding:0 16px 16px; display:none; }
-  .card.open .card-body { display:block; }
+  --chord:#D0326A;
+  --chord-soft:rgba(208,50,106,.10);
 
-  /* 工具列：轉調、字級、模式 */
-  .toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-    background:#FAF3E7; border:1px solid #EADDC4; border-radius:10px; padding:8px 10px; margin-bottom:12px; }
-  .round { width:34px; height:34px; border-radius:50%; border:none; background:#E8A87C; color:#fff;
-    font-size:18px; font-weight:700; cursor:pointer; line-height:1; font-family:inherit; }
-  .round:hover { background:#D89567; }
-  .keybox { font-family:ui-monospace,Menlo,monospace; font-weight:700; font-size:20px; color:#B4703F;
-    min-width:52px; text-align:center; }
-  .capo { font-size:13px; color:#1f6b4d; font-weight:500; }
-  .orig { font-size:11px; color:#9C8568; }
-  .spacer { flex:1; }
-  .mini { border:1px solid #E0D1B0; background:#fff; color:#6B5740; border-radius:8px;
-    width:32px; height:32px; cursor:pointer; font-size:13px; font-family:inherit; }
-  .mini:hover { background:#F2EAD3; }
-  .mini.on { background:#E8A87C; color:#fff; border-color:#E8A87C; }
+  --rule:rgba(23,22,29,.10);
+  --rule-2:rgba(23,22,29,.16);
+  --shadow:0 1px 1px rgba(23,22,29,.04), 0 12px 32px -16px rgba(23,22,29,.28);
+  --glow:inset 0 1px 0 rgba(255,255,255,.75);
 
-  /* 文字譜 */
-  .sheet { background:#fff; border:1px solid #EADDC4; border-radius:10px; padding:14px 14px 18px; overflow-x:auto; }
-  .s-sec { font-family:ui-monospace,Menlo,monospace; font-weight:700; color:#B4703F;
-    margin:16px 0 4px; letter-spacing:.5px; }
-  .s-sec:first-child { margin-top:0; }
-  .s-line { margin-bottom:1px; }
-  .s-u { display:inline-flex; flex-direction:column; align-items:flex-start; vertical-align:top; }
-  .s-cd { font-style:normal; font-family:ui-monospace,Menlo,monospace; font-weight:700;
-    color:#C0561F; white-space:nowrap; padding-right:.45em; }
-  .s-tx { font-style:normal; white-space:pre; color:#2C2118; }
-  .copyright { font-size:11px; color:#B8A788; text-align:center; margin-top:16px; padding-top:8px; border-top:1px solid #F2EAD3; }
+  --f-ui:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r-s:8px; --r-m:12px; --r-c:14px; --r-l:20px;
 
-  .card-body img { width:100%; height:auto; display:block; border-radius:8px; border:1px solid #E8DCC0; }
-  .download-btn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%;
-    margin-top:10px; padding:10px; background:#E8A87C; color:#fff; border:1px solid #E8A87C;
-    border-radius:8px; font-size:14px; cursor:pointer; font-weight:500; font-family:inherit; }
-  .download-btn:hover { background:#D89567; }
-  .download-btn svg { width:16px; height:16px; }
+  /* 手機系統空間 */
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--ground);color:var(--ink);font-family:var(--f-ui);
+  line-height:1.55;-webkit-font-smoothing:antialiased;overflow:hidden;
+}
+button,input{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:5px}
 
-  .empty { text-align:center; color:#9C8568; padding:48px 16px; font-size:14px;
-    background:#FFFEF9; border:1px dashed #E0D1B0; border-radius:12px; }
-  .loading { text-align:center; color:#9C8568; padding:48px 0; }
+.app{position:fixed;inset:0;overflow:hidden;background:var(--ground);
+  padding-left:var(--sal);padding-right:var(--sar)}
+.aurora{position:absolute;inset:-25%;z-index:0;pointer-events:none;filter:blur(64px)}
+.aurora i{position:absolute;display:block;border-radius:50%}
+.aurora .a1{width:62%;height:38%;left:-8%;top:2%;background:var(--au1)}
+.aurora .a2{width:70%;height:42%;right:-14%;bottom:4%;background:var(--au2)}
+.aurora .a3{width:52%;height:32%;right:-6%;top:28%;background:var(--au3)}
 
-  .modal-bg { display:none; position:fixed; inset:0; background:rgba(61,46,31,.5); z-index:20;
-    align-items:center; justify-content:center; padding:16px; }
-  .modal-bg.show { display:flex; }
-  .modal { background:#FFFEF9; border-radius:16px; padding:24px; max-width:400px; width:100%; }
-  .modal h2 { font-size:18px; margin-bottom:6px; }
-  .modal p { margin-bottom:14px; font-size:13px; color:#6B5740; }
-  .modal input { width:100%; margin-bottom:12px; }
-  .modal-actions { display:flex; gap:8px; justify-content:flex-end; }
-  .modal-actions button { padding:9px 18px; border-radius:8px; border:1px solid #E0D1B0;
-    background:#FFFEF9; cursor:pointer; font-size:14px; font-family:inherit; color:#6B5740; }
-  .modal-actions button.primary { background:#E8A87C; color:#fff; border-color:#E8A87C; }
-  .modal-status { font-size:13px; margin-top:10px; }
-  .help-bg { display:none; position:fixed; inset:0; background:rgba(61,46,31,.5); z-index:30;
-    align-items:flex-start; justify-content:center; padding:16px; overflow-y:auto; }
-  .help-bg.show { display:flex; }
-  .help { background:#FFFEF9; border-radius:16px; padding:24px 24px 28px; max-width:560px; width:100%;
-    margin:16px auto; position:relative; }
-  .help-close { position:absolute; top:12px; right:12px; width:32px; height:32px; border:none;
-    background:#F2EAD3; border-radius:50%; cursor:pointer; color:#6B5740;
-    display:flex; align-items:center; justify-content:center; }
-  .help-close svg { width:14px; height:14px; }
-  .help h2 { font-size:20px; margin-bottom:4px; padding-right:36px; }
-  .help .sub2 { font-size:13px; color:#9C8568; margin-bottom:18px; }
-  .hsec { margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid #F2EAD3; }
-  .hsec:last-child { border-bottom:none; padding-bottom:0; margin-bottom:0; }
-  .hsec h3 { font-size:15px; margin-bottom:6px; }
-  .hsec p, .hsec li { font-size:14px; color:#6B5740; line-height:1.7; }
-  .hsec ol, .hsec ul { padding-left:20px; }
-  .hsec strong { color:#3D2E1F; }
-  .htabs { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
-  .htab { padding:6px 12px; border-radius:6px; border:1px solid #E0D1B0; background:#FFFEF9;
-    font-size:13px; cursor:pointer; font-family:inherit; color:#6B5740; }
-  .htab.on { background:#E8A87C; color:#fff; border-color:#E8A87C; }
-  .htc { display:none; background:#FAF0E1; padding:12px 14px; border-radius:8px; }
-  .htc.on { display:block; }
-  .footer { text-align:center; margin-top:36px; padding:18px 0; font-size:12px; color:#B8A788; border-top:1px solid #E8DCC0; }
+/* ---------- 索引頁 ---------- */
+.binder{position:absolute;inset:0;z-index:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.wrap{max-width:720px;margin:0 auto}
+.topbar{
+  position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:8px;
+  padding:calc(12px + var(--sat)) 14px 12px;
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border-bottom:1px solid var(--glass-edge);
+}
+.topbar>.inner{max-width:720px;margin:0 auto;width:100%;display:flex;align-items:center;gap:8px}
+.mark{display:flex;flex-direction:column;line-height:1.15;margin-right:auto;min-width:0}
+.mark .eyebrow{font-family:var(--f-mono);font-size:10px;font-weight:500;
+  letter-spacing:.22em;color:var(--brand);text-transform:uppercase}
+.mark .name{font-size:16.5px;font-weight:600;letter-spacing:-.015em}
+.ico{width:36px;height:36px;border-radius:11px;flex:none;display:grid;place-items:center;
+  color:var(--ink-2);border:1px solid transparent}
+.ico:hover{background:var(--glass-2);border-color:var(--glass-edge)}
+.ico[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand);border-color:transparent}
+.ico svg{width:19px;height:19px}
+
+.index{padding:14px 14px calc(30px + var(--sab))}
+.searchrow{margin-bottom:12px}
+.searchrow.hidden{display:none}
+.field{display:flex;align-items:center;gap:9px;border-radius:var(--r-m);padding:0 13px;
+  background:var(--glass);border:1px solid var(--rule-2)}
+.field svg{width:16px;height:16px;color:var(--muted);flex:none}
+.field input{flex:1;border:none;background:none;outline:none;padding:11px 0;min-width:0;font-size:16px}
+.field:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+
+.chips{display:flex;gap:6px;margin-bottom:16px}
+.chip{padding:6px 14px;border-radius:999px;font-size:13px;
+  background:var(--glass);border:1px solid var(--glass-edge);color:var(--ink-2);box-shadow:var(--glow)}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:transparent;color:var(--on-brand);box-shadow:none}
+
+.tabs-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 4px 8px}
+.tabs-head h2{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--muted)}
+.tabs-head .n{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.tab-list{display:flex;flex-direction:column;gap:8px}
+.tab{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:14px;border-radius:var(--r-c);
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid var(--glass-edge);box-shadow:var(--shadow),var(--glow);
+  transition:transform .12s ease, background .12s ease;
+}
+.tab:hover{background:var(--glass-hi)}
+.tab:active{transform:scale(.985)}
+.tab .body{flex:1;min-width:0}
+.tab .t{font-size:15.5px;font-weight:600;letter-spacing:-.012em;
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.tab .m{font-size:12px;color:var(--muted);margin-top:1px;font-variant-numeric:tabular-nums}
+.pill{font-size:10px;font-weight:600;letter-spacing:.06em;padding:2.5px 7px;border-radius:5px;line-height:1.5}
+.pill.new{background:var(--brand-soft);color:var(--brand)}
+.keychip{font-family:var(--f-mono);font-size:16px;font-weight:500;color:var(--brand);
+  min-width:32px;text-align:right;flex:none;letter-spacing:-.01em}
+.tab .go{color:var(--rule-2);flex:none;display:flex}
+.tab .go svg{width:15px;height:15px}
+
+/* 「我想要新的譜」：清單最上面一條實心的靛色，不可能看不到 */
+.askbig{
+  width:100%;margin-bottom:14px;padding:14px 16px;border-radius:var(--r-c);
+  background:var(--brand);color:var(--on-brand);
+  display:flex;align-items:center;gap:11px;text-align:left;
+  box-shadow:0 1px 1px rgba(23,22,29,.06), 0 10px 24px -12px rgba(67,64,184,.7);
+  transition:transform .12s ease, filter .12s ease;
+}
+.askbig:hover{filter:brightness(1.08)}
+.askbig:active{transform:scale(.985)}
+.askbig svg{width:19px;height:19px;flex:none}
+.askbig b{font-size:15.5px;font-weight:600;letter-spacing:-.01em;flex:1}
+.askbig .go{opacity:.7;width:15px;height:15px}
+
+.askcard{
+  width:100%;margin-top:14px;padding:15px 14px;border-radius:var(--r-c);text-align:left;
+  background:var(--glass-2);border:1px dashed var(--rule-2);
+  display:flex;align-items:center;gap:12px;color:var(--ink-2);
+}
+.askcard:hover{background:var(--glass);border-style:solid}
+.askcard .plus{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;
+  background:var(--brand-soft);color:var(--brand)}
+.askcard .plus svg{width:16px;height:16px}
+.askcard b{display:block;font-size:14px;color:var(--ink);font-weight:600}
+.askcard span{font-size:12.5px;color:var(--muted)}
+
+.empty,.loading{text-align:center;color:var(--muted);font-size:14px;padding:44px 16px;
+  border:1px dashed var(--rule-2);border-radius:var(--r-m);background:var(--glass-2)}
+.foot{padding:22px 16px calc(8px + var(--sab));text-align:center;font-size:12px;color:var(--muted)}
+
+/* ---------- 譜頁 ---------- */
+.sheetview{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;background:var(--ground)}
+.sheetview[hidden]{display:none}
+.sheet-top{
+  position:relative;z-index:3;flex:none;display:flex;align-items:center;gap:9px;
+  padding:calc(11px + var(--sat)) 14px 11px;
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border-bottom:1px solid var(--glass-edge);
+}
+.sheet-top .inner{max-width:720px;margin:0 auto;width:100%;display:flex;align-items:center;gap:9px}
+.sheet-top .title{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.sheet-top .title .t{font-size:15px;font-weight:600;letter-spacing:-.012em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet-top .title .m{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.keybar{
+  position:relative;z-index:3;flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 14px;
+  background:var(--glass-2);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border-bottom:1px solid var(--glass-edge);
+}
+.keybar .inner{max-width:720px;margin:0 auto;width:100%;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.keybar[hidden]{display:none}
+.step{width:36px;height:36px;border-radius:11px;flex:none;
+  border:1px solid var(--glass-edge);background:var(--glass);box-shadow:var(--glow);
+  font-size:17px;font-weight:500;color:var(--ink-2);display:grid;place-items:center;line-height:1}
+.step:hover{color:var(--brand);border-color:var(--brand)}
+.nowkey{font-family:var(--f-mono);font-size:27px;font-weight:600;line-height:1;
+  color:var(--chord);min-width:58px;text-align:center;letter-spacing:-.03em}
+.keymeta{display:flex;flex-direction:column;line-height:1.35;min-width:0}
+.keymeta .capo{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);font-weight:500}
+.keymeta .orig{font-size:11px;color:var(--muted)}
+.krt{display:flex;gap:6px;margin-left:auto;flex:none}
+.tiny{height:32px;min-width:36px;padding:0 9px;border-radius:9px;
+  border:1px solid var(--glass-edge);background:var(--glass);box-shadow:var(--glow);
+  font-size:12.5px;color:var(--ink-2)}
+.tiny:hover{color:var(--brand);border-color:var(--brand)}
+.tiny.reset{color:var(--chord)}
+.tiny[aria-pressed="true"]{background:var(--brand);color:var(--on-brand);border-color:transparent}
+.imgnote{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+
+.stage{position:relative;z-index:2;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+  padding:14px 14px calc(78px + var(--sab));-webkit-overflow-scrolling:touch}
+.paper{max-width:720px;margin:0 auto;
+  background:var(--paper);border:1px solid var(--glass-edge);border-radius:var(--r-m);
+  box-shadow:var(--shadow);padding:20px 18px 24px;overflow-x:auto}
+.paper.pic{padding:10px}
+.paper img{display:block;width:100%;height:auto;border-radius:var(--r-s)}
+.paper.turn-l{animation:tl .17s ease-in forwards}
+.paper.turn-r{animation:tr .17s ease-in forwards}
+.paper.land-l{animation:ll .24s ease-out}
+.paper.land-r{animation:lr .24s ease-out}
+@keyframes tl{to{transform:translateX(-14%);opacity:0}}
+@keyframes tr{to{transform:translateX(14%);opacity:0}}
+@keyframes ll{from{transform:translateX(14%);opacity:0}}
+@keyframes lr{from{transform:translateX(-14%);opacity:0}}
+@media(prefers-reduced-motion:reduce){
+  .tab{transition:none}.tab:active{transform:none}
+  .paper.turn-l,.paper.turn-r,.paper.land-l,.paper.land-r{animation:none}
+}
+
+.sec{display:flex;align-items:center;gap:10px;margin:26px 0 9px}
+.sec:first-child{margin-top:0}
+.sec-t{font-weight:600;color:var(--brand);background:var(--brand-soft);
+  padding:3px 10px;border-radius:6px;letter-spacing:.06em;white-space:nowrap}
+.sec-r{flex:1;height:1px;background:var(--rule)}
+.ln{margin-bottom:2px}
+.u{display:inline-flex;flex-direction:column;align-items:flex-start;vertical-align:top}
+.cd{font-style:normal;font-family:var(--f-mono);font-weight:600;color:var(--chord);
+  white-space:nowrap;padding-right:.5em;letter-spacing:-.02em}
+.tx{font-style:normal;white-space:pre;color:var(--ink)}
+.credit{font-size:11px;color:var(--muted);text-align:center;
+  margin-top:24px;padding-top:11px;border-top:1px solid var(--rule)}
+
+.flipbar{
+  position:absolute;left:0;right:0;bottom:0;z-index:5;padding-bottom:var(--sab);
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border-top:1px solid var(--glass-edge);
+}
+.flipbar .inner{max-width:720px;margin:0 auto;display:flex;align-items:stretch}
+.flip{flex:1;min-width:0;padding:11px 12px;display:flex;align-items:center;gap:8px;
+  color:var(--ink-2);font-size:13px}
+.flip:hover:not(:disabled){color:var(--brand);background:var(--glass-hi)}
+.flip:disabled{opacity:.35;cursor:default}
+.flip.next{justify-content:flex-end;text-align:right}
+.flip svg{width:15px;height:15px;flex:none}
+.flip .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pos{display:grid;place-items:center;padding:0 13px;flex:none;
+  font-family:var(--f-mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;
+  border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+.save{background:var(--brand);color:var(--on-brand);padding:0 17px;display:grid;place-items:center;flex:none;
+  min-width:52px}
+.save:disabled{opacity:.6}
+.save svg{width:17px;height:17px}
+
+/* ---------- 抽屜 ---------- */
+/* 抽屜：四邊都跟螢幕邊界留開，是一張浮起來的卡，不是黏在底部的板子 */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(10,10,16,.45);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:calc(16px + var(--sat)) calc(12px + var(--sal)) calc(12px + var(--sab)) calc(12px + var(--sar))}
+.scrim[hidden]{display:none}
+.drawer{
+  position:relative;width:100%;max-width:640px;max-height:100%;overflow-y:auto;
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);
+  border:1px solid var(--glass-hi);border-radius:var(--r-l);
+  box-shadow:0 24px 60px -20px rgba(23,22,29,.5);
+  padding:22px 18px 24px;
+}
+.drawer h3{font-size:21px;font-weight:700;letter-spacing:-.02em;margin-bottom:5px;padding-right:34px}
+.drawer .lead{font-size:14px;color:var(--muted);margin-bottom:6px;line-height:1.7}
+
+/* 說明的每一段自己一張小卡，眼睛才有地方落腳 */
+.hsec{background:var(--paper);border:1px solid var(--glass-edge);border-radius:var(--r-m);
+  padding:14px 16px 15px;margin-top:10px}
+.drawer h4{
+  font-family:var(--f-ui);font-size:15.5px;font-weight:700;color:var(--ink);
+  letter-spacing:-.01em;text-transform:none;margin:0 0 7px;
+  display:flex;align-items:center;gap:9px;
+}
+.drawer h4::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--brand);flex:none}
+.drawer p,.drawer li{font-size:14px;color:var(--ink-2);line-height:1.75}
+.drawer p+p{margin-top:7px}
+.drawer ul,.drawer ol{padding-left:19px;margin-top:5px}
+.drawer li{margin-bottom:2px}
+.drawer strong{color:var(--ink);font-weight:600}
+.close-x{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;
+  background:var(--glass-2);border:1px solid var(--rule-2);display:grid;place-items:center;color:var(--ink-2);z-index:2}
+.close-x:hover{background:var(--paper);color:var(--ink)}
+.close-x svg{width:14px;height:14px}
+.drawer .field{margin-bottom:12px}
+.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.btn{padding:10px 18px;border-radius:10px;font-size:14px;
+  border:1px solid var(--rule-2);background:var(--glass);color:var(--ink-2)}
+.btn.primary{background:var(--brand);color:var(--on-brand);border-color:transparent;font-weight:500}
+.btn:disabled{opacity:.6}
+.status{font-size:13px;margin-top:10px;min-height:20px}
+.status.ok{color:var(--brand)}
+.status.err{color:var(--chord)}
+.htabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.htab{padding:6px 12px;border-radius:999px;border:1px solid var(--glass-edge);
+  background:var(--glass);font-size:13px;color:var(--ink-2)}
+.htab[aria-pressed="true"]{background:var(--brand);color:var(--on-brand);border-color:transparent}
+.htc{display:none;background:var(--ground);padding:12px 14px;border-radius:var(--r-s);
+  border:1px solid var(--rule)}
+.htc.on{display:block}
+.htabs{margin-top:2px}
 </style>
 </head>
 <body>
 
-<svg width="0" height="0" style="position:absolute;"><defs>
-  <symbol id="i-guitar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M14.5 7.5L18 4l2 2-3.5 3.5"/><path d="M13 9l2 2"/><circle cx="9" cy="15" r="5"/><circle cx="9" cy="15" r="1.5"/><path d="M11 13l3.5-3.5"/></symbol>
-  <symbol id="i-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
-  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
-  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></symbol>
-  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></symbol>
-  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M18 6L6 18M6 6l12 12"/></symbol>
-  <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M6 9l6 6 6-6"/></symbol>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+<symbol id="q" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 4"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></symbol>
 </defs></svg>
 
-<div class="wrap">
-  <div class="header">
-    <div class="logo"><div class="logo-icon"><svg><use href="#i-guitar"/></svg></div><h1>寶寶勇士樂譜庫</h1></div>
-    <div class="tagline">點開歌曲看譜，可以自己轉調、調字級</div>
+<div class="app">
+  <div class="aurora" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
+
+  <div class="binder" id="binder">
+    <header class="topbar">
+      <div class="inner">
+        <span class="mark">
+          <span class="eyebrow">Baby Warriors</span>
+          <span class="name">寶寶勇士樂譜庫</span>
+        </span>
+        <button class="ico" id="bSearch" aria-pressed="false" aria-label="搜尋"><svg><use href="#s"/></svg></button>
+        <button class="ico" id="bHelp" aria-label="使用說明"><svg><use href="#q"/></svg></button>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="index">
+        <button class="askbig" id="bAsk">
+          <svg><use href="#plus"/></svg>
+          <b>我想要新的譜</b>
+          <svg class="go"><use href="#r"/></svg>
+        </button>
+        <div class="searchrow hidden" id="searchRow">
+          <label class="field"><svg><use href="#s"/></svg>
+            <input id="q" type="search" placeholder="搜曲名、原唱，也可以直接打歌詞" autocomplete="off"></label>
+        </div>
+        <div class="chips" role="group" aria-label="篩選">
+          <button class="chip" data-f="all" aria-pressed="true">全部</button>
+          <button class="chip" data-f="快歌" aria-pressed="false">快歌</button>
+          <button class="chip" data-f="慢歌" aria-pressed="false">慢歌</button>
+        </div>
+        <div class="tabs-head"><h2>所有的譜</h2><span class="n" id="count"></span></div>
+        <div id="tabs"><div class="loading">載入中…</div></div>
+        <button class="askcard" id="bAsk2">
+          <span class="plus"><svg><use href="#plus"/></svg></span>
+          <span><b>找不到想要的歌？</b><span>登記歌名，老師會收到通知</span></span>
+        </button>
+        <div class="foot">寶寶勇士樂譜庫 · 由 Ruby 維護</div>
+      </div>
+    </div>
   </div>
 
-  <div class="top-actions">
-    <button class="btn primary" id="requestBtn"><svg><use href="#i-music"/></svg>我想要新的譜</button>
-    <button class="btn" id="toggleSearch"><svg><use href="#i-search"/></svg>搜尋</button>
-    <button class="btn" id="helpBtn"><svg><use href="#i-help"/></svg>使用說明</button>
-  </div>
+  <section class="sheetview" id="sheetView" hidden aria-label="譜頁">
+    <div class="sheet-top">
+      <div class="inner">
+        <button class="ico" id="bBack" aria-label="回譜夾"><svg><use href="#l"/></svg></button>
+        <span class="title"><span class="t" id="stTitle"></span><span class="m" id="stMeta"></span></span>
+      </div>
+    </div>
 
-  <div class="controls" id="controls">
-    <input type="text" id="search" placeholder="搜尋曲名、原唱、歌詞…" />
-    <select id="filter"><option value="all">全部</option><option value="快歌">快歌</option><option value="慢歌">慢歌</option></select>
-  </div>
+    <div class="keybar" id="keybar">
+      <div class="inner">
+        <button class="step" id="bDown" aria-label="降半音">−</button>
+        <span class="nowkey" id="nowKey">C</span>
+        <button class="step" id="bUp" aria-label="升半音">+</button>
+        <span class="keymeta"><span class="capo" id="capo"></span><span class="orig" id="orig"></span></span>
+        <span class="krt">
+          <button class="tiny reset" id="bReset" hidden>回原調</button>
+          <button class="tiny" id="bA1" aria-label="縮小字">A−</button>
+          <button class="tiny" id="bA2" aria-label="放大字">A+</button>
+          <button class="tiny" id="bMode" hidden aria-pressed="false">圖</button>
+        </span>
+      </div>
+    </div>
 
-  <div class="list-header"><div class="list-title">所有譜</div><div class="count" id="count"></div></div>
-  <div id="list"><div class="loading">載入中…</div></div>
-  <div class="footer">寶寶勇士樂譜庫 · 由 Ruby 維護</div>
+    <div class="keybar" id="picbar" hidden>
+      <div class="inner">
+        <span class="imgnote" id="picNote"></span>
+        <span class="krt"><button class="tiny" id="bMode2" hidden>文字</button></span>
+      </div>
+    </div>
+
+    <div class="stage" id="stage"><div class="paper" id="paper"></div></div>
+
+    <nav class="flipbar" aria-label="翻頁">
+      <div class="inner">
+        <button class="flip prev" id="bPrev"><svg><use href="#l"/></svg><span class="lab" id="prevLab"></span></button>
+        <span class="pos" id="pos"></span>
+        <button class="flip next" id="bNext"><span class="lab" id="nextLab"></span><svg><use href="#r"/></svg></button>
+        <button class="save" id="bSave" aria-label="下載 / 存到相簿"><svg><use href="#dl"/></svg></button>
+      </div>
+    </nav>
+  </section>
 </div>
 
-<div class="modal-bg" id="modal"><div class="modal">
-  <h2>我想要新的譜</h2>
-  <p>告訴老師你想要哪首歌的譜，老師會盡快寫好上傳～</p>
-  <input type="text" id="songInput" placeholder="請輸入歌名" />
-  <div class="modal-actions"><button id="cancelBtn">取消</button><button class="primary" id="submitBtn">送出</button></div>
-  <div class="modal-status" id="modalStatus"></div>
-</div></div>
-
-<div class="help-bg" id="helpModal"><div class="help">
-  <button class="help-close" id="helpClose"><svg><use href="#i-close"/></svg></button>
-  <h2>歡迎來到寶寶勇士樂譜庫</h2>
-  <div class="sub2">這裡有老師整理的詩歌譜，給寶寶勇士的樂手練習用。第一次來嗎？花一分鐘看看怎麼用～</div>
-
-  <div class="hsec"><h3>怎麼看譜？</h3>
-    <p><strong>點一下歌名</strong>就會展開譜面，再點一次收起來。</p></div>
-
-  <div class="hsec"><h3>不好按？可以自己轉調</h3>
-    <p>譜的上方有一排工具：</p>
-    <ul>
-      <li><strong>− ／ ＋</strong>：升降半音，和弦會立刻全部跟著變</li>
-      <li><strong>↺</strong>：回到原本的調</li>
-      <li><strong>Capo 3　play C</strong>：告訴你夾第幾格、用哪個調的指型彈，就能只用好按的和弦</li>
-      <li><strong>A− ／ A＋</strong>：字太小可以放大</li>
-    </ul>
-    <p style="margin-top:6px;">歌名旁邊有紫色「<strong>可轉調</strong>」標籤的才能轉調。舊的譜只有圖片，沒有標籤。</p>
-    <p style="margin-top:6px;">如果那首歌同時有圖片版，工具列右邊會出現「<strong>圖</strong>」，可以切回去看老師原本排好的圖；在圖片版按「<strong>文字</strong>」再切回來。</p></div>
-
-  <div class="hsec"><h3>怎麼存到手機/電腦？</h3>
-    <p>按譜下面的「<strong>下載 / 存到相簿</strong>」，會把<strong>你現在轉到的那個調</strong>存成圖片。</p>
-    <ul><li><strong>手機</strong>：選「儲存圖片」存到相簿</li><li><strong>電腦</strong>：直接下載</li></ul></div>
-
-  <div class="hsec"><h3>找不到想要的歌？</h3>
-    <p>按上方「<strong>我想要新的譜</strong>」輸入歌名送出，老師會收到通知。搜尋也可以<strong>直接打歌詞</strong>找。</p></div>
-
-  <div class="hsec"><h3>把網頁加到主畫面，下次更快打開</h3>
-    <div class="htabs">
-      <button class="htab on" data-tab="ios">iPhone</button>
-      <button class="htab" data-tab="android">Android</button>
-      <button class="htab" data-tab="pc">電腦</button>
-    </div>
-    <div class="htc on" id="t-ios"><strong>iPhone（Safari）</strong>
-      <ol><li>用 <strong>Safari</strong> 打開（不要用 LINE 內建瀏覽器）</li>
-      <li>按下方中間的「<strong>分享</strong>」按鈕</li>
-      <li>往下捲，選「<strong>加入主畫面</strong>」</li>
-      <li>按右上角「<strong>新增</strong>」</li></ol></div>
-    <div class="htc" id="t-android"><strong>Android（Chrome）</strong>
-      <ol><li>用 <strong>Chrome</strong> 打開</li><li>按右上角「<strong>⋮</strong>」</li>
-      <li>選「<strong>加到主畫面</strong>」</li><li>按「新增」</li></ol></div>
-    <div class="htc" id="t-pc"><strong>電腦（Chrome / Edge）</strong>
-      <ol><li>網址列右邊找「<strong>安裝</strong>」圖示</li><li>按下去 → 「<strong>安裝</strong>」</li></ol>
-      <p style="margin-top:8px;font-size:13px;color:#9C8568;">沒看到的話，加書籤也可以～</p></div></div>
-
-  <div class="hsec"><h3>有問題？</h3><p>找老師反應就可以了～</p></div>
-</div></div>
+<div class="scrim" id="drawer" hidden><div class="drawer" id="drawerBody"></div></div>
 
 <script>
+/* ============================================================
+   後端網址。GAS 重新部署後如果網址換了，只改這一行。
+   ============================================================ */
 const BASE = 'https://script.google.com/macros/s/AKfycbwDzqeKKe-ER3OoipeptQXPe2izLp7YU0PZNYHPulaqIDdiHC7e_ZTWUmvpB4zr0nV_/exec';
 
-/* ---------- 樂理（跟後台編輯器同一套） ---------- */
+/* ---------- 樂理 ---------- */
 const SHARP=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const FLAT =['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 const PC={'C':0,'B#':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'Fb':4,'E#':5,'F':5,
@@ -267,7 +452,7 @@ function bestCapo(base,steps){
     pref.indexOf(mod12(t.pc-a.n))-pref.indexOf(mod12(t.pc-b.n))||a.n-b.n)[0];
 }
 
-/* ---------- ChordPro 解析 ---------- */
+/* ---------- ChordPro ---------- */
 const chars=t=>Array.from(String(t));
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function parseLine(raw){let text='',list=[],i=0;
@@ -292,230 +477,369 @@ function parseChordPro(src){
   });
   return {sections:secs, meta};
 }
-
-/* ---------- 文字譜渲染（逐字對位） ---------- */
-function sheetHtml(song, steps, fs){
-  const base = song._base;
-  const arr = FLAT_KEYS.has(curKey(base,steps).name) ? FLAT : SHARP;
-  const cdSize = Math.round(fs*0.78);
+function sheetHtml(song,steps,fs,print){
+  const arr = FLAT_KEYS.has(curKey(song._base,steps).name) ? FLAT : SHARP;
+  const cs2=Math.round(fs*0.76), ss=Math.round(fs*0.78);
+  const secStyle = print
+    ? `font-size:${ss}px;font-weight:600;color:#000;background:#EEE;padding:3px 10px;border-radius:6px;letter-spacing:.06em;white-space:nowrap`
+    : `font-size:${ss}px`;
   let h='';
-  song._parsed.sections.forEach(sec=>{
-    if(sec.name) h+=`<div class="s-sec" style="font-size:${Math.round(fs*0.82)}px">${esc(sec.name)}</div>`;
+  song._p.sections.forEach(sec=>{
+    if(sec.name) h+=`<div class="sec"><span class="sec-t" style="${secStyle}">${esc(sec.name)}</span><span class="sec-r"></span></div>`;
     sec.lines.forEach(l=>{
       const map={}; l.chords.forEach(c=>{map[c.i]=c.c;});
-      const cs=chars(l.text); let u='';
-      for(let i=0;i<=cs.length;i++){
+      const cc=chars(l.text); let u='';
+      for(let i=0;i<=cc.length;i++){
         const ch=map[i];
-        if(i===cs.length && !ch) break;
-        const glyph = i===cs.length ? '&nbsp;' : (cs[i]===' '?'&nbsp;':esc(cs[i]));
-        u+=`<span class="s-u"><i class="s-cd" style="font-size:${cdSize}px;height:${Math.round(cdSize*1.35)}px;line-height:${Math.round(cdSize*1.35)}px">`+
+        if(i===cc.length && !ch) break;
+        const g = i===cc.length ? '&nbsp;' : (cc[i]===' '?'&nbsp;':esc(cc[i]));
+        u+=`<span class="u"><i class="cd" style="font-size:${cs2}px;height:${Math.round(cs2*1.4)}px;line-height:${Math.round(cs2*1.4)}px${print?';color:#000':''}">`+
            `${ch?esc(transposeChord(ch,steps,arr)):''}</i>`+
-           `<i class="s-tx" style="font-size:${fs}px;line-height:${Math.round(fs*1.45)}px">${glyph}</i></span>`;
+           `<i class="tx" style="font-size:${fs}px;line-height:${Math.round(fs*1.5)}px${print?';color:#000':''}">${g}</i></span>`;
       }
-      h+=`<div class="s-line">${u||'&nbsp;'}</div>`;
+      h+=`<div class="ln">${u||'&nbsp;'}</div>`;
     });
   });
-  const cr = song.copyright || song._parsed.meta.copyright;
-  if(cr) h+=`<div class="copyright">${esc(cr)}</div>`;
+  const cr = song.copyright || song._p.meta.copyright;
+  if(cr) h+=`<div class="credit"${print?' style="color:#555"':''}>${esc(cr)}</div>`;
   return h;
 }
 
-/* ---------- 狀態 ---------- */
-let songs=[], openId=null;
-const view={};   // id → {steps, fs, mode}
+/* ============================================================
+   狀態
+   ============================================================ */
+let SONGS=[], filter='all', query='', order=[], idx=0;
+const view={};
+const st=id=>view[id]||(view[id]={steps:0,fs:17,mode:null});
+const $=s=>document.querySelector(s);
+const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function prep(s){
+  const cp=String(s.chordpro||'').trim();
+  s._has=!!cp;
+  if(cp){ s._p=parseChordPro(cp);
+    s._base=s._p.meta.key||s.key||'C';
+    s._ly=s._p.sections.map(x=>x.lines.map(l=>l.text).join('')).join(''); }
+  else { s._ly=''; }
+  // 圖片：主圖 → 預設調的圖 → 任何一張。API v3 的 images{} 有就用，沒有就自己找欄位。
+  const KEYS=['C','D','E','F','G','A','B'];
+  const imgs = (s.images && typeof s.images==='object') ? s.images : null;
+  const pick = k => String((imgs && imgs[k]) || s['imageUrl_'+k] || '').trim();
+  s._img = String(s.imageUrl||'').trim();
+  if(!s._img) s._img = pick(String(s.defaultKey||s.key||'').replace(/m$/i,''));
+  if(!s._img){ for(const k of KEYS){ const u=pick(k); if(u){ s._img=u; break; } } }
+}
 
 async function load(){
   try{
     const d=await(await fetch(BASE+'?api=list')).json();
-    if(!d.success)throw new Error(d.error);
-    songs=d.songs.slice().reverse();
-    prep(); render();
+    if(!d.success) throw new Error(d.error||'後端回報失敗');
+    SONGS=(d.songs||[]).slice().reverse();
+    SONGS.forEach(prep);
+    renderIndex();
   }catch(e){
-    document.getElementById('list').innerHTML='<div class="empty">連線失敗：'+e.message+'</div>';
+    $('#tabs').innerHTML='<div class="empty">連不上樂譜庫：'+esc(e.message)+
+      '<br><br>檢查一下網路，或稍後再試一次。</div>';
   }
 }
-function prep(){
-  songs.forEach(s=>{
-    const cp=String(s.chordpro||'').trim();
-    s._hasText = !!cp;
-    if(cp){ s._parsed=parseChordPro(cp);
-      s._base = s._parsed.meta.key || s.key || 'C';
-      s._lyrics = s._parsed.sections.map(x=>x.lines.map(l=>l.text).join('')).join('');
-    }
-    s._img = s.imageUrl || s.imageUrl_C || '';
+
+function visible(){
+  const q=query.trim().toLowerCase();
+  return SONGS.filter(s=>{
+    const mq=!q||String(s.title||'').toLowerCase().includes(q)
+      ||String(s.artist||'').toLowerCase().includes(q)
+      ||(s._ly||'').toLowerCase().includes(q);
+    return mq && (filter==='all'||s.type===filter);
   });
 }
-function st(id){ if(!view[id])view[id]={steps:0,fs:17,mode:null}; return view[id]; }
 
-function render(){
-  const q=document.getElementById('search').value.trim().toLowerCase();
-  const t=document.getElementById('filter').value;
-  const f=songs.filter(s=>{
-    const mq=!q||(s.title||'').toLowerCase().includes(q)||(s.artist||'').toLowerCase().includes(q)
-      ||(s._lyrics||'').toLowerCase().includes(q);
-    return mq && (t==='all'||s.type===t);
-  });
-  const list=document.getElementById('list');
-  if(!f.length){ list.innerHTML='<div class="empty">找不到符合的譜</div>';
-    document.getElementById('count').textContent=''; return; }
-
-  list.innerHTML=f.map((s,idx)=>{
-    const open = openId===String(s.id);
-    const v = st(s.id);
-    const mode = v.mode || (s._hasText?'text':'img');
-    const tagCls = s.type==='快歌'?'tag-fast':'tag-slow';
-    const newest = idx===0 && !q && t==='all' ? '<span class="badge-new">最新</span>' : '';
-    const textBadge = s._hasText ? '<span class="badge-text">可轉調</span>' : '';
-
-    let body='';
-    if(open){
-      if(mode==='text' && s._hasText){
-        const k=curKey(s._base,v.steps), capo=bestCapo(s._base,v.steps);
-        body=`<div class="card-body">
-          <div class="toolbar">
-            <button class="round" onclick="tp('${s.id}',-1)">−</button>
-            <span class="keybox">${k.name}</span>
-            <button class="round" onclick="tp('${s.id}',1)">＋</button>
-            ${v.steps? `<span class="orig">原調 ${esc(keyName(parseKey(s._base).pc,parseKey(s._base).minor))}</span>
-                        <button class="mini" title="回原調" onclick="tp('${s.id}',0,true)">↺</button>`:''}
-            <span class="capo">${capo?`Capo ${capo.n}　play ${capo.shape}`:'no capo'}</span>
-            <span class="spacer"></span>
-            <button class="mini" title="縮小字" onclick="fs('${s.id}',-1)">A−</button>
-            <button class="mini" title="放大字" onclick="fs('${s.id}',1)">A＋</button>
-            ${s._img?`<button class="mini ${mode==='img'?'on':''}" title="看圖片版" onclick="md('${s.id}','img')">圖</button>`:''}
-          </div>
-          <div class="sheet" id="sheet-${s.id}">${sheetHtml(s,v.steps,v.fs)}</div>
-          <button class="download-btn" onclick="dl('${s.id}',this)"><svg><use href="#i-download"/></svg>下載 / 存到相簿</button>
-        </div>`;
-      } else if(s._img){
-        body=`<div class="card-body">
-          ${s._hasText?`<div class="toolbar"><span class="orig">圖片版（固定 ${esc(s.defaultKey||s.key||'')} 調）</span>
-            <span class="spacer"></span><button class="mini on" onclick="md('${s.id}','text')">文字</button></div>`:''}
-          <img src="${s._img}" alt="${esc(s.title)}" />
-          <button class="download-btn" onclick="dlImg('${s._img}','${esc(s.title)}')"><svg><use href="#i-download"/></svg>下載 / 存到相簿</button>
-        </div>`;
-      } else {
-        body='<div class="card-body"><div class="empty">這首還沒有譜</div></div>';
-      }
-    }
-    return `<div class="card${open?' open':''}">
-      <div class="card-head" onclick="tog('${s.id}')">
-        <div class="card-main">
-          <div class="name">${esc(s.title)}<span class="tag ${tagCls}">${esc(s.type||'')}</span>${textBadge}${newest}</div>
-          <div class="meta">${esc(s.artist||'')}${s.key?' · Key '+esc(s.key):''}${s.bpm?' · '+esc(s.bpm)+' BPM':''}</div>
-        </div>
-        <span class="chevron"><svg><use href="#i-chevron"/></svg></span>
-      </div>${body}</div>`;
-  }).join('');
-  document.getElementById('count').textContent='共 '+f.length+' 首';
+function renderIndex(){
+  const list=visible();
+  $('#count').textContent = list.length ? list.length+' 首' : '';
+  const box=$('#tabs');
+  if(!list.length){ box.className=''; box.innerHTML='<div class="empty">沒有找到符合的譜</div>'; return; }
+  box.className='tab-list';
+  box.innerHTML=list.map((s,i)=>`
+    <button class="tab" data-id="${esc(s.id)}">
+      <span class="body">
+        <span class="t">${esc(s.title)}
+          ${i===0&&!query&&filter==='all'?'<span class="pill new">最新</span>':''}</span>
+        <span class="m">${[esc(s.artist||''),esc(s.type||''),s.bpm?esc(s.bpm)+' BPM':''].filter(Boolean).join(' · ')}</span>
+      </span>
+      <span class="keychip">${esc(s.key||'')}</span>
+      <span class="go"><svg><use href="#r"/></svg></span>
+    </button>`).join('');
 }
 
-function tog(id){ openId = openId===String(id)?null:String(id); render(); }
-function tp(id,d,reset){ const v=st(id); v.steps = reset?0:Math.max(-11,Math.min(11,v.steps+d)); render(); }
-function fs(id,d){ const v=st(id); v.fs=Math.max(13,Math.min(30,v.fs+d*2)); render(); }
-function md(id,m){ st(id).mode=m; render(); }
+/* ---------- 譜頁 ---------- */
+function openSong(id){
+  order=visible(); idx=Math.max(0,order.findIndex(s=>String(s.id)===String(id)));
+  $('#sheetView').hidden=false; renderSheet(); $('#bBack').focus();
+}
+function closeSong(){
+  $('#sheetView').hidden=true;
+  const t=document.querySelector('.tab[data-id="'+(order[idx]&&order[idx].id)+'"]');
+  if(t) t.focus();
+}
+function modeOf(s,v){ return v.mode || (s._has?'text':'img'); }
 
-// 下載：把目前的調重新排成一張乾淨的譜（有抬頭），不是直接截畫面
-async function dl(id, btn){
-  const s=songs.filter(x=>String(x.id)===String(id))[0];
-  const v=st(id), k=curKey(s._base,v.steps).name;
-  if(typeof html2canvas==='undefined'){ alert('出圖元件沒載入，請確認有網路再試一次'); return; }
-  const label=btn&&btn.innerHTML; if(btn){btn.disabled=true; btn.textContent='產生圖片中…';}
+function renderSheet(){
+  const s=order[idx]; if(!s) return closeSong();
+  const v=st(s.id), mode=modeOf(s,v);
+  $('#stTitle').textContent=s.title||'';
+  $('#stMeta').textContent=[s.artist,s.type,s.bpm?s.bpm+' BPM':''].filter(Boolean).join(' · ');
+  $('#pos').textContent=(idx+1)+' / '+order.length;
+  const p=order[idx-1], n=order[idx+1];
+  $('#bPrev').disabled=!p; $('#prevLab').textContent=p?p.title:'第一首';
+  $('#bNext').disabled=!n; $('#nextLab').textContent=n?n.title:'最後一首';
+
+  const paper=$('#paper');
+  if(mode==='text' && s._has){
+    $('#keybar').hidden=false; $('#picbar').hidden=true;
+    const k=curKey(s._base,v.steps), capo=bestCapo(s._base,v.steps);
+    $('#nowKey').textContent=k.name;
+    $('#capo').textContent = capo ? 'Capo '+capo.n+' · 按 '+capo.shape : '不用夾 capo';
+    $('#orig').textContent = v.steps ? '原調 '+keyName(parseKey(s._base).pc,parseKey(s._base).minor) : '譜上原本的調';
+    $('#bReset').hidden = !v.steps;
+    $('#bMode').hidden = !s._img;
+    paper.className='paper';
+    paper.innerHTML=sheetHtml(s,v.steps,v.fs,false);
+  } else if(s._img){
+    $('#keybar').hidden=true; $('#picbar').hidden=false;
+    $('#picNote').textContent='圖片版'+(s.defaultKey||s.key?' · 固定 '+(s.defaultKey||s.key)+' 調':'');
+    $('#bMode2').hidden = !s._has;
+    paper.className='paper pic';
+    paper.innerHTML='<img src="'+esc(s._img)+'" alt="'+esc(s.title)+'">';
+  } else {
+    $('#keybar').hidden=true; $('#picbar').hidden=true;
+    paper.className='paper';
+    paper.innerHTML='<div class="empty" style="border:none;background:none">這首還沒有譜</div>';
+  }
+  $('#bSave').disabled = !(s._has || s._img);
+}
+
+function flip(dir){
+  const to=idx+dir; if(to<0||to>=order.length) return;
+  const paper=$('#paper');
+  if(reduce()){ idx=to; renderSheet(); $('#stage').scrollTop=0; return; }
+  const out=dir>0?'turn-l':'turn-r', land=dir>0?'land-l':'land-r';
+  paper.classList.add(out);
+  setTimeout(()=>{
+    idx=to; renderSheet(); $('#stage').scrollTop=0;
+    paper.classList.remove(out); paper.classList.add(land);
+    setTimeout(()=>paper.classList.remove(land),240);
+  },170);
+}
+function bump(d){ const v=st(order[idx].id); v.steps=Math.max(-11,Math.min(11,v.steps+d)); renderSheet(); }
+function size(d){ const v=st(order[idx].id); v.fs=Math.max(13,Math.min(30,v.fs+d*2)); renderSheet(); }
+function setMode(m){ st(order[idx].id).mode=m; renderSheet(); $('#stage').scrollTop=0; }
+
+/* ---------- 下載 ---------- */
+async function save(){
+  const s=order[idx], v=st(s.id), btn=$('#bSave');
+  if(modeOf(s,v)==='img' || !s._has){ return dlImage(s); }
+  if(typeof html2canvas==='undefined'){ alert('出圖元件沒載入，確認有網路再試一次'); return; }
+  btn.disabled=true;
   try{
+    const k=curKey(s._base,v.steps).name, capo=bestCapo(s._base,v.steps);
     const meta=[s.artist,'Key: '+k,s.bpm?'BPM: '+s.bpm:''].filter(Boolean).join('　·　');
-    const capo=bestCapo(s._base,v.steps);
     const box=document.createElement('div');
-    box.style.cssText='position:fixed;left:-9999px;top:0;width:660px;background:#fff;padding:30px 34px 34px;'+
-      'font-family:-apple-system,\'PingFang TC\',\'Microsoft JhengHei\',sans-serif;color:#000;';
-    box.innerHTML =
-      '<div style="text-align:center;padding-bottom:8px;margin-bottom:14px;border-bottom:1px solid #000;">'+
-        '<div style="font-size:26px;font-weight:700;">'+esc(s.title)+'</div>'+
-        '<div style="font-size:14px;margin-top:4px;">'+esc(meta)+'</div>'+
-        (capo?'<div style="font-size:13px;margin-top:3px;color:#1f6b4d;">Capo '+capo.n+'　play '+capo.shape+'</div>':'')+
-      '</div>'+
-      '<div class="sheet-print">'+sheetHtml(s,v.steps,19)+'</div>';
-    // 列印用：和弦改成黑色，才不會印出來太淡
-    box.querySelectorAll('.s-cd').forEach(e=>{e.style.color='#000';});
-    box.querySelectorAll('.s-sec').forEach(e=>{e.style.color='#000';});
+    box.style.cssText='position:fixed;left:-9999px;top:0;width:660px;background:#fff;'+
+      'padding:30px 34px 34px;color:#000;font-family:'+getComputedStyle(document.body).fontFamily;
+    box.innerHTML=
+      '<div style="text-align:center;padding-bottom:10px;margin-bottom:16px;border-bottom:1px solid #000">'+
+        '<div style="font-size:26px;font-weight:700">'+esc(s.title)+'</div>'+
+        '<div style="font-size:14px;margin-top:4px">'+esc(meta)+'</div>'+
+        (capo?'<div style="font-size:13px;margin-top:3px">Capo '+capo.n+'　按 '+capo.shape+' 的指型</div>':'')+
+      '</div>'+ sheetHtml(s,v.steps,19,true);
     document.body.appendChild(box);
     const c=await html2canvas(box,{scale:2,backgroundColor:'#ffffff'});
     document.body.removeChild(box);
-    await saveOrShare(c.toDataURL('image/png'), s.title+'_'+k+'.png', s.title);
+    await shareOrDownload(c.toDataURL('image/png'), s.title+'_'+k+'.png', s.title);
   }catch(e){ alert('產生圖片失敗：'+e.message); }
-  finally{ if(btn){btn.disabled=false; btn.innerHTML=label;} }
+  finally{ btn.disabled=false; }
 }
-async function dlImg(url,title){
+async function dlImage(s){
   try{
-    const blob=await(await fetch(url)).blob();
-    await shareBlob(blob,title+'.png',title);
-    return;
+    const blob=await(await fetch(s._img)).blob();
+    if(await shareBlob(blob,s.title+'.png',s.title)) return;
   }catch(e){}
-  save(url,title+'.png');
+  download(s._img, s.title+'.png');
 }
-// 手機優先走「分享」，才能直接存到相簿；不支援就一般下載
-async function saveOrShare(dataUrl,name,title){
+async function shareOrDownload(dataUrl,name,title){
   try{
     const blob=await(await fetch(dataUrl)).blob();
     if(await shareBlob(blob,name,title)) return;
   }catch(e){}
-  save(dataUrl,name);
+  download(dataUrl,name);
 }
 async function shareBlob(blob,name,title){
   if(!(navigator.share&&navigator.canShare)) return false;
   const file=new File([blob],name,{type:'image/png'});
   if(!navigator.canShare({files:[file]})) return false;
   try{ await navigator.share({files:[file],title:title}); return true; }
-  catch(e){ return e && e.name==='AbortError'; }   // 使用者自己取消就不要再跳下載
+  catch(e){ return e && e.name==='AbortError'; }
 }
-function save(href,name){
-  const a=document.createElement('a'); a.href=href; a.download=name; a.target='_blank';
+function download(href,name){
+  const a=document.createElement('a');
+  a.href=href; a.download=name; a.target='_blank';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
-document.getElementById('toggleSearch').onclick=()=>document.getElementById('controls').classList.toggle('show');
-document.getElementById('search').oninput=render;
-document.getElementById('filter').onchange=render;
+/* ---------- 抽屜 ---------- */
+function openDrawer(html){
+  $('#drawerBody').innerHTML=html; $('#drawer').hidden=false; $('#drawerBody').scrollTop=0;
+  const f=$('#drawerBody').querySelector('input,[data-close]'); if(f) f.focus();
+}
+function closeDrawer(){ $('#drawer').hidden=true; }
 
-const modal=document.getElementById('modal');
-document.getElementById('requestBtn').onclick=()=>{
-  document.getElementById('songInput').value='';
-  document.getElementById('modalStatus').textContent='';
-  modal.classList.add('show');
-};
-document.getElementById('cancelBtn').onclick=()=>modal.classList.remove('show');
-modal.onclick=e=>{ if(e.target===modal)modal.classList.remove('show'); };
-document.getElementById('submitBtn').onclick=async function(){
-  const name=document.getElementById('songInput').value.trim();
-  const st2=document.getElementById('modalStatus');
-  if(!name){ st2.textContent='請輸入歌名'; st2.style.color='#791F1F'; return; }
-  this.disabled=true; this.textContent='送出中…';
+const ASK=`<button class="close-x" data-close aria-label="關閉"><svg><use href="#x"/></svg></button>
+<h3>我想要新的譜</h3>
+<div class="lead">告訴老師你想要哪首歌，老師會收到通知，盡快寫好上傳。</div>
+<label class="field"><svg><use href="#s"/></svg>
+  <input id="askInput" type="text" placeholder="請輸入歌名" autocomplete="off"></label>
+<div class="acts"><button class="btn" data-close>取消</button>
+  <button class="btn primary" id="askSend">送出</button></div>
+<div class="status" id="askStatus"></div>`;
+
+const HELP=`<button class="close-x" data-close aria-label="關閉"><svg><use href="#x"/></svg></button>
+<h3>怎麼用這個樂譜庫</h3>
+<div class="lead">老師整理的詩歌譜，給寶寶勇士的樂手練習用。看完這五段就會用了。</div>
+
+<div class="hsec"><h4>看譜</h4>
+<p>點清單上的歌名，整頁譜就翻出來。左上角 <strong>‹</strong> 回到清單。</p></div>
+
+<div class="hsec"><h4>不好按？自己換調</h4>
+<p>譜上面那排：<strong>−</strong> <strong>+</strong> 升降半音，<strong>粉紅色大字</strong>就是現在的調。旁邊會告訴你要夾第幾格、按哪個調的指型。改過之後會出現「回原調」。</p>
+<p><strong>A−</strong> <strong>A+</strong> 是調字的大小，站遠一點也看得到。</p></div>
+
+<div class="hsec"><h4>翻到下一首</h4>
+<p>最下面那排可以直接翻前後一首，手機上<strong>左右滑</strong>也行。電腦用 <strong>←</strong> <strong>→</strong>，按 <strong>Esc</strong> 回清單。</p></div>
+
+<div class="hsec"><h4>存到手機相簿</h4>
+<p>右下角的下載鍵。存下來的是<strong>你現在轉到的那個調</strong>，不是原本的調。手機會跳出分享，選「儲存影像」就進相簿。</p></div>
+
+<div class="hsec"><h4>找不到想要的歌</h4>
+<p>按清單最上面那條<strong>「我想要新的譜」</strong>，輸入歌名送出，老師會收到通知。</p>
+<p>搜尋也可以<strong>直接打歌詞</strong>找，不一定要記得歌名。</p></div>
+
+<div class="hsec"><h4>看老師排好的圖</h4>
+<p>有些歌除了文字譜，也有老師原本排好的圖。這種歌在轉調那排的右邊會出現「<strong>圖</strong>」，按下去可以切過去看；在圖片版按「<strong>文字</strong>」就切回來。</p></div>
+
+<div class="hsec"><h4>加到主畫面，下次更快打開</h4>
+<div class="htabs">
+  <button class="htab" data-tab="ios" aria-pressed="true">iPhone</button>
+  <button class="htab" data-tab="android" aria-pressed="false">Android</button>
+  <button class="htab" data-tab="pc" aria-pressed="false">電腦</button>
+</div>
+<div class="htc on" id="t-ios">
+  <ol><li>用 <strong>Safari</strong> 打開（不要用 LINE 內建的瀏覽器）</li>
+  <li>按下方中間的<strong>分享</strong>鍵</li>
+  <li>往下捲，選「<strong>加入主畫面</strong>」</li>
+  <li>按右上角「<strong>新增</strong>」</li></ol></div>
+<div class="htc" id="t-android">
+  <ol><li>用 <strong>Chrome</strong> 打開</li><li>按右上角「<strong>⋮</strong>」</li>
+  <li>選「<strong>加到主畫面</strong>」</li><li>按「新增」</li></ol></div>
+<div class="htc" id="t-pc">
+  <ol><li>網址列右邊找「<strong>安裝</strong>」的圖示</li><li>按下去 →「<strong>安裝</strong>」</li></ol>
+  <p style="color:var(--muted)">沒看到的話，加書籤也可以。</p></div>
+</div>
+
+<div class="hsec"><h4>有問題</h4>
+<p>找老師反應就可以了。</p></div>`;
+
+/* ---------- 事件 ---------- */
+$('#tabs').addEventListener('click',e=>{
+  const t=e.target.closest('.tab'); if(t) openSong(t.dataset.id);
+});
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+  filter=c.dataset.f;
+  document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',String(x===c)));
+  renderIndex();
+}));
+$('#bSearch').addEventListener('click',()=>{
+  const hid=$('#searchRow').classList.toggle('hidden');
+  $('#bSearch').setAttribute('aria-pressed',String(!hid));
+  if(!hid) $('#q').focus(); else { query=''; $('#q').value=''; renderIndex(); }
+});
+$('#q').addEventListener('input',e=>{ query=e.target.value; renderIndex(); });
+
+$('#bBack').addEventListener('click',closeSong);
+$('#bPrev').addEventListener('click',()=>flip(-1));
+$('#bNext').addEventListener('click',()=>flip(1));
+$('#bDown').addEventListener('click',()=>bump(-1));
+$('#bUp').addEventListener('click',()=>bump(1));
+$('#bReset').addEventListener('click',()=>{ st(order[idx].id).steps=0; renderSheet(); });
+$('#bA1').addEventListener('click',()=>size(-1));
+$('#bA2').addEventListener('click',()=>size(1));
+$('#bMode').addEventListener('click',()=>setMode('img'));
+$('#bMode2').addEventListener('click',()=>setMode('text'));
+$('#bSave').addEventListener('click',save);
+
+$('#bHelp').addEventListener('click',()=>openDrawer(HELP));
+[$('#bAsk'),$('#bAsk2')].forEach(b=>b.addEventListener('click',()=>openDrawer(ASK)));
+
+$('#drawer').addEventListener('click',e=>{
+  if(e.target===$('#drawer')||e.target.closest('[data-close]')){ closeDrawer(); return; }
+  const tab=e.target.closest('.htab');
+  if(tab){
+    document.querySelectorAll('.htab').forEach(t=>t.setAttribute('aria-pressed',String(t===tab)));
+    document.querySelectorAll('.htc').forEach(c=>c.classList.remove('on'));
+    const box=document.getElementById('t-'+tab.dataset.tab); if(box) box.classList.add('on');
+    return;
+  }
+  if(e.target.closest('#askSend')) sendRequest();
+});
+$('#drawer').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.id==='askInput'){ e.preventDefault(); sendRequest(); }
+});
+
+async function sendRequest(){
+  const input=document.getElementById('askInput');
+  const btn=document.getElementById('askSend');
+  const out=document.getElementById('askStatus');
+  if(!input||!btn||!out) return;
+  const name=input.value.trim();
+  if(!name){ out.className='status err'; out.textContent='先輸入歌名'; input.focus(); return; }
+  btn.disabled=true; btn.textContent='送出中…'; out.className='status'; out.textContent='';
   try{
     const d=await(await fetch(BASE+'?api=request&song='+encodeURIComponent(name))).json();
-    if(d.success){ st2.textContent='✓ 送出成功！老師收到囉'; st2.style.color='#085041';
-      setTimeout(()=>modal.classList.remove('show'),1500); }
-    else { st2.textContent='送出失敗：'+d.error; st2.style.color='#791F1F'; }
-  }catch(e){ st2.textContent='連線失敗：'+e.message; st2.style.color='#791F1F'; }
-  this.disabled=false; this.textContent='送出';
-};
+    if(d.success){
+      out.className='status ok';
+      out.textContent = d.duplicated ? '這首剛剛已經登記過了，老師收到囉' : '送出成功，老師收到囉';
+      input.value='';
+      setTimeout(closeDrawer,1400);
+    } else { out.className='status err'; out.textContent='送不出去：'+(d.error||'後端回報失敗'); }
+  }catch(e){ out.className='status err'; out.textContent='連不上：'+e.message; }
+  btn.disabled=false; btn.textContent='送出';
+}
 
-/* ---------- 使用說明 ---------- */
-const helpModal=document.getElementById('helpModal');
-const HELP_KEY='baowarriors_help_v2';
-function openHelp(){ helpModal.classList.add('show'); }
-function closeHelp(){ helpModal.classList.remove('show');
-  try{ localStorage.setItem(HELP_KEY,'1'); }catch(e){} }
-document.getElementById('helpBtn').onclick=openHelp;
-document.getElementById('helpClose').onclick=closeHelp;
-helpModal.onclick=e=>{ if(e.target===helpModal) closeHelp(); };
-document.querySelectorAll('.htab').forEach(tab=>{
-  tab.onclick=()=>{
-    document.querySelectorAll('.htab').forEach(t=>t.classList.remove('on'));
-    document.querySelectorAll('.htc').forEach(c=>c.classList.remove('on'));
-    tab.classList.add('on');
-    document.getElementById('t-'+tab.dataset.tab).classList.add('on');
-  };
+document.addEventListener('keydown',e=>{
+  if(!$('#drawer').hidden){ if(e.key==='Escape') closeDrawer(); return; }
+  if($('#sheetView').hidden) return;
+  if(e.key==='Escape') closeSong();
+  else if(e.key==='ArrowRight') flip(1);
+  else if(e.key==='ArrowLeft') flip(-1);
+  else if(e.key==='+'||e.key==='=') bump(1);
+  else if(e.key==='-') bump(-1);
 });
-try{ if(!localStorage.getItem(HELP_KEY)) setTimeout(openHelp,400); }catch(e){}
+
+let sx=0,sy=0,tracking=false;
+const stage=$('#stage');
+stage.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1) return;
+  sx=e.touches[0].clientX; sy=e.touches[0].clientY; tracking=true;
+},{passive:true});
+stage.addEventListener('touchend',e=>{
+  if(!tracking) return; tracking=false;
+  const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+  if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.8) flip(dx<0?1:-1);
+},{passive:true});
+
+/* 第一次來自動開說明 */
+const HELP_KEY='baowarriors_help_v3';
+try{ if(!localStorage.getItem(HELP_KEY)){ setTimeout(()=>openDrawer(HELP),500); } }catch(e){}
+$('#drawer').addEventListener('click',()=>{ try{ localStorage.setItem(HELP_KEY,'1'); }catch(e){} });
 
 load();
 </script>
