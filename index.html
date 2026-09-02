@@ -6,6 +6,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#EFEEF3">
 <title>寶寶勇士樂譜庫</title>
+
+<!-- 分頁圖示 -->
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<!-- 加到主畫面 -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="樂譜庫">
+<!-- 貼到 LINE / FB 時的預覽縮圖。網址一定要寫完整的，寫相對路徑抓不到。 -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="寶寶勇士樂譜庫">
+<meta property="og:title" content="寶寶勇士樂譜庫">
+<meta property="og:description" content="兒童牧區敬拜團的線上樂譜庫。點開就能看譜、自己轉調、存到手機相簿。">
+<meta property="og:url" content="https://rubyboss2004.github.io/babypoo/">
+<meta property="og:image" content="https://rubyboss2004.github.io/babypoo/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -82,6 +102,7 @@ button{cursor:pointer;background:none;border:none}
   border-bottom:1px solid var(--glass-edge);
 }
 .topbar>.inner{max-width:720px;margin:0 auto;width:100%;display:flex;align-items:center;gap:8px}
+.brandmark{width:40px;height:40px;flex:none;object-fit:contain;margin-right:2px}
 .mark{display:flex;flex-direction:column;line-height:1.15;margin-right:auto;min-width:0}
 .mark .eyebrow{font-family:var(--f-mono);font-size:10px;font-weight:500;
   letter-spacing:.22em;color:var(--brand);text-transform:uppercase}
@@ -237,6 +258,7 @@ button{cursor:pointer;background:none;border:none}
 .cd{font-style:normal;font-family:var(--f-mono);font-weight:600;color:var(--chord);
   white-space:nowrap;padding-right:.5em;letter-spacing:-.02em}
 .tx{font-style:normal;white-space:pre;color:var(--ink)}
+.tx.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;padding-right:.3em;color:var(--muted)}
 .credit{font-size:11px;color:var(--muted);text-align:center;
   margin-top:24px;padding-top:11px;border-top:1px solid var(--rule)}
 
@@ -335,8 +357,9 @@ button{cursor:pointer;background:none;border:none}
   <div class="binder" id="binder">
     <header class="topbar">
       <div class="inner">
+        <img class="brandmark" src="logo.png" alt="" width="256" height="256">
         <span class="mark">
-          <span class="eyebrow">Baby Warriors</span>
+          <span class="eyebrow">Warrior Charts</span>
           <span class="name">寶寶勇士樂譜庫</span>
         </span>
         <button class="ico" id="bSearch" aria-pressed="false" aria-label="搜尋"><svg><use href="#s"/></svg></button>
@@ -477,27 +500,68 @@ function parseChordPro(src){
   });
   return {sections:secs, meta};
 }
+// 一排和弦底下疊好幾段歌詞：檔案裡存成「1. 帶和弦」＋「2. 3. 沒和弦」的連續行，
+// 這裡把它們併回同一組，第 2 段之後的和弦「留寬度但不顯示」，字才會對得齊。
+function groupLines(lines){
+  const out=[];
+  for(let i=0;i<lines.length;i++){
+    const L=lines[i];
+    const m=String(L.text).match(/^\s*1\s*[.、．]\s*/);
+    if(L.chords.length && m){
+      const alts=[]; let j=i+1;
+      while(j<lines.length){
+        const N=lines[j], mm=String(N.text).match(/^\s*(\d+)\s*[.、．]\s*/);
+        if(N.chords.length || !mm) break;
+        alts.push(N.text.replace(mm[0],'')); j++;
+      }
+      if(alts.length){
+        const cut=chars(m[0]).length;      // 拿掉「1. 」之後，和弦位置也要跟著左移
+        out.push({ text:L.text.replace(m[0],''),
+                   chords:L.chords.map(c=>({c:c.c,i:Math.max(0,c.i-cut)})), alts:alts });
+        i=j-1; continue;
+      }
+    }
+    out.push({ text:L.text, chords:L.chords, alts:[] });
+  }
+  return out;
+}
+
 function sheetHtml(song,steps,fs,print){
   const arr = FLAT_KEYS.has(curKey(song._base,steps).name) ? FLAT : SHARP;
   const cs2=Math.round(fs*0.76), ss=Math.round(fs*0.78);
+  const cdh=Math.round(cs2*1.4), lh=Math.round(fs*1.5);
+  const ink = print ? ';color:#000' : '';
   const secStyle = print
     ? `font-size:${ss}px;font-weight:600;color:#000;background:#EEE;padding:3px 10px;border-radius:6px;letter-spacing:.06em;white-space:nowrap`
     : `font-size:${ss}px`;
   let h='';
   song._p.sections.forEach(sec=>{
     if(sec.name) h+=`<div class="sec"><span class="sec-t" style="${secStyle}">${esc(sec.name)}</span><span class="sec-r"></span></div>`;
-    sec.lines.forEach(l=>{
+    if(!sec._g) sec._g = groupLines(sec.lines);
+    sec._g.forEach(l=>{
       const map={}; l.chords.forEach(c=>{map[c.i]=c.c;});
-      const cc=chars(l.text); let u='';
-      for(let i=0;i<=cc.length;i++){
-        const ch=map[i];
-        if(i===cc.length && !ch) break;
-        const g = i===cc.length ? '&nbsp;' : (cc[i]===' '?'&nbsp;':esc(cc[i]));
-        u+=`<span class="u"><i class="cd" style="font-size:${cs2}px;height:${Math.round(cs2*1.4)}px;line-height:${Math.round(cs2*1.4)}px${print?';color:#000':''}">`+
-           `${ch?esc(transposeChord(ch,steps,arr)):''}</i>`+
-           `<i class="tx" style="font-size:${fs}px;line-height:${Math.round(fs*1.5)}px${print?';color:#000':''}">${g}</i></span>`;
-      }
-      h+=`<div class="ln">${u||'&nbsp;'}</div>`;
+      let N=chars(l.text).length;
+      l.alts.forEach(t=>{ N=Math.max(N, chars(t).length); });
+      l.chords.forEach(c=>{ N=Math.max(N, c.i+1); });
+
+      const row=(txt,ghost,num)=>{
+        const cs=chars(txt);
+        const cdStyle = ghost
+          ? `font-size:${cs2}px;height:0;line-height:0;overflow:hidden;visibility:hidden${ink}`
+          : `font-size:${cs2}px;height:${cdh}px;line-height:${cdh}px${ink}`;
+        const txStyle = `font-size:${fs}px;line-height:${lh}px${ink}`;
+        let u = num ? `<span class="u"><i class="cd" style="${cdStyle}"></i><i class="tx num" style="${txStyle}">${num}.</i></span>` : '';
+        for(let i=0;i<N;i++){
+          const ch=map[i];
+          const g = i<cs.length ? (cs[i]===' '?'&nbsp;':esc(cs[i])) : '&nbsp;';
+          u+=`<span class="u"><i class="cd" style="${cdStyle}">${ch?esc(transposeChord(ch,steps,arr)):''}</i>`+
+             `<i class="tx" style="${txStyle}">${g}</i></span>`;
+        }
+        return `<div class="ln">${u||'&nbsp;'}</div>`;
+      };
+
+      h += row(l.text, false, l.alts.length ? 1 : 0);
+      l.alts.forEach((t,k)=>{ h += row(t, true, k+2); });
     });
   });
   const cr = song.copyright || song._p.meta.copyright;
