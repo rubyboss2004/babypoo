@@ -264,11 +264,12 @@ button{cursor:pointer;background:none;border:none}
   padding:3px 10px;border-radius:6px;letter-spacing:.06em;white-space:nowrap}
 .sec-r{flex:1;height:1px;background:var(--rule)}
 .ln{margin-bottom:2px}
-.u{display:inline-flex;flex-direction:column;align-items:flex-start;vertical-align:top}
+.u{display:inline-flex;flex-direction:column;align-items:flex-start;vertical-align:top;max-width:100%}
 .cd{font-style:normal;font-family:var(--f-mono);font-weight:600;color:var(--chord);
-  white-space:nowrap;padding-right:.5em;letter-spacing:-.02em}
-.tx{font-style:normal;white-space:pre;color:var(--ink)}
-.tx.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;padding-right:.3em;color:var(--muted)}
+  white-space:nowrap;padding-right:.35em;letter-spacing:-.02em}
+.tx{font-style:normal;white-space:pre-wrap;color:var(--ink)}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.ln.plain{white-space:pre-wrap;color:var(--ink)}
 .credit{font-size:11px;color:var(--muted);text-align:center;
   margin-top:24px;padding-top:11px;border-top:1px solid var(--rule)}
 
@@ -539,23 +540,46 @@ function groupLines(lines){
   return out;
 }
 
-/* 把一行切成「格子」。中文一個字一格（跟以前一樣），英文整個單字一格——
-   不然每個字母都是獨立的一格，換行會從單字中間斷開，和弦的寬度也會把單字撐散。
-   和弦落在單字中間就從那裡切開，Amaz[G]ing 這種寫法本來就是對的。 */
-const LATIN=/[A-Za-z0-9'’À-ɏ]/;
-function wordCells(text, chords){
-  const cs=chars(text), at={};
-  chords.forEach(c=>{ at[c.i]=1; });
-  const out=[]; let k=0, max=-1;
-  while(k<cs.length){
-    if(LATIN.test(cs[k])){
-      let j=k+1;
-      while(j<cs.length && LATIN.test(cs[j]) && !at[j]) j++;
-      out.push({i:k, t:cs.slice(k,j).join('')}); k=j;
-    } else { out.push({i:k, t:cs[k]}); k++; }
+/* 以「和弦到下一個和弦之間」切成一段，段內的字連在一起，絕不拆開。
+   段寬 = max(那幾個字的寬度, 和弦的寬度)，所以只有和弦比它底下的字還寬時才會
+   撐開一點點——也就是「真的放不下才稍微分開」。中文英文同一套。
+   （舊版是「一個字一格」，等於每個字都可能被和弦撐開，歌詞就散了。） */
+const CJK=/[\u3400-\u9fff\uf900-\ufaff\u3040-\u30ff]/;
+// 這一行主要是英文嗎？英文的多段歌詞不能逐字對齊（verse 1 跟 verse 2 的字根本不同）
+function latinLine(t){
+  let lat=0, cjk=0;
+  chars(t).forEach(c=>{ if(/[A-Za-z]/.test(c)) lat++; else if(CJK.test(c)) cjk++; });
+  return lat > cjk;
+}
+/* 切點 = 每個和弦的位置。和弦如果落在英文單字中間，就往前挪到那個字的開頭，
+   單字才不會被切成兩半（Wor / ship）。同一個字裡有兩個和弦時，後面那個往後
+   挪到下一個字。回傳 idx（切點）＋ map（切點上的和弦）。 */
+const LAT=/[A-Za-z0-9'’À-ɏ]/;
+function cutOf(text, chords){
+  const cs=chars(text), n=cs.length;
+  const inW = i => i>0 && i<n && LAT.test(cs[i]) && LAT.test(cs[i-1]);
+  const taken={}, map={};
+  let tail=-1;
+  (chords||[]).slice().sort((a,b)=>a.i-b.i).forEach(ch=>{
+    let at = ch.i;
+    while(inW(at)) at--;                      // 挪到單字開頭
+    while(taken[at]){ at++; while(inW(at)) at++; }
+    if(at>n) at=n;
+    taken[at]=1; map[at]=ch.c;
+    if(at>tail) tail=at;
+  });
+  const idx=[0];
+  Object.keys(taken).map(Number).sort((a,b)=>a-b)
+    .forEach(i=>{ if(i>0 && i<n) idx.push(i); });
+  return {idx, map, tail};
+}
+function segsAt(text, cut){
+  const cs=chars(text), out=[];
+  for(let k=0;k<cut.idx.length;k++){
+    const a=cut.idx[k], b=(k+1<cut.idx.length)?cut.idx[k+1]:cs.length;
+    out.push({i:a, t:cs.slice(Math.min(a,cs.length), Math.min(b,cs.length)).join('')});
   }
-  chords.forEach(c=>{ if(c.i>max) max=c.i; });
-  if(max>=cs.length) out.push({i:cs.length, t:''});   // 壓在行尾的和弦
+  if(cut.tail>=cs.length) out.push({i:cut.tail, t:''});   // 和弦壓在行尾
   return out;
 }
 
@@ -572,41 +596,35 @@ function sheetHtml(song,steps,fs,print){
     if(sec.name) h+=`<div class="sec"><span class="sec-t" style="${secStyle}">${esc(sec.name)}</span><span class="sec-r"></span></div>`;
     if(!sec._g) sec._g = groupLines(sec.lines);
     sec._g.forEach(l=>{
-      const map={}; l.chords.forEach(c=>{map[c.i]=c.c;});
-      let N=chars(l.text).length;
-      l.alts.forEach(t=>{ N=Math.max(N, chars(t).length); });
-      l.chords.forEach(c=>{ N=Math.max(N, c.i+1); });
+      const cut = cutOf(l.text, l.chords), map = cut.map;
+      const txStyle = `font-size:${fs}px;line-height:${lh}px${ink}`;
+      const cdOn  = `font-size:${cs2}px;height:${cdh}px;line-height:${cdh}px${ink}`;
+      const cdOff = `font-size:${cs2}px;height:0;line-height:0;overflow:hidden;visibility:hidden${ink}`;
+      const chordAt = i => map[i] ? esc(transposeChord(map[i],steps,arr)) : '';
+      // 一段 = 和弦 ＋ 到下一個和弦為止的那串字（字連在一起，不拆）
+      const seg=(chordTxt,text,ghost)=>
+        `<span class="u"><i class="cd" style="${ghost?cdOff:cdOn}${chordTxt?'':';padding-right:0'}">${chordTxt}</i>`+
+        `<i class="tx" style="${txStyle}">${text||'&nbsp;'}</i></span>`;
+      const numSeg=(num,ghost)=>seg('', '<span class="num">'+num+'.</span>&nbsp;', ghost);
 
-      const row=(txt,ghost,num)=>{
-        const cs=chars(txt);
-        const cdStyle = ghost
-          ? `font-size:${cs2}px;height:0;line-height:0;overflow:hidden;visibility:hidden${ink}`
-          : `font-size:${cs2}px;height:${cdh}px;line-height:${cdh}px${ink}`;
-        const txStyle = `font-size:${fs}px;line-height:${lh}px${ink}`;
-        let u = num ? `<span class="u"><i class="cd" style="${cdStyle}"></i><i class="tx num" style="${txStyle}">${num}.</i></span>` : '';
-        for(let i=0;i<N;i++){
-          const ch=map[i];
-          const g = i<cs.length ? (cs[i]===' '?'&nbsp;':esc(cs[i])) : '&nbsp;';
-          u+=`<span class="u"><i class="cd" style="${cdStyle}">${ch?esc(transposeChord(ch,steps,arr)):''}</i>`+
-             `<i class="tx" style="${txStyle}">${g}</i></span>`;
-        }
+      const segRow=(txt,ghost,num)=>{
+        let u = num ? numSeg(num,ghost) : '';
+        segsAt(txt, cut).forEach(c=>{
+          u += seg(chordAt(c.i), esc(c.t), ghost);
+        });
         return `<div class="ln">${u||'&nbsp;'}</div>`;
       };
 
-      // 多段歌詞要逐字對齊，所以維持一字一格；單段就用詞為單位，英文才不會散掉
-      if(l.alts.length){
-        h += row(l.text, false, 1);
-        l.alts.forEach((t,k)=>{ h += row(t, true, k+2); });
-      }else{
-        const cdStyle=`font-size:${cs2}px;height:${cdh}px;line-height:${cdh}px${ink}`;
-        const txStyle=`font-size:${fs}px;line-height:${lh}px${ink}`;
-        let u='';
-        wordCells(l.text, l.chords).forEach(c=>{
-          const ch=map[c.i];
-          u+=`<span class="u"><i class="cd" style="${cdStyle}">${ch?esc(transposeChord(ch,steps,arr)):''}</i>`+
-             `<i class="tx" style="${txStyle}">${c.t===' '?'&nbsp;':(c.t?esc(c.t):'&nbsp;')}</i></span>`;
+      if(!l.alts.length){
+        h += segRow(l.text, false, 0);
+      }else if(latinLine(l.text)){          // 英文多段：只有第 1 段帶和弦，其餘是普通文字
+        h += segRow(l.text, false, 1);
+        l.alts.forEach((t,k)=>{
+          h += `<div class="ln plain" style="${txStyle}"><span class="num">${k+2}.</span> ${esc(t)}</div>`;
         });
-        h+=`<div class="ln">${u||'&nbsp;'}</div>`;
+      }else{                                // 中文多段：每段切在相同位置，寬度才會一致
+        h += segRow(l.text, false, 1);
+        l.alts.forEach((t,k)=>{ h += segRow(t, true, k+2); });
       }
     });
   });
