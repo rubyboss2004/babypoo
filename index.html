@@ -179,6 +179,13 @@ button{cursor:pointer;background:none;border:none}
 .askcard b{display:block;font-size:14px;color:var(--ink);font-weight:600}
 .askcard span{font-size:12.5px;color:var(--muted)}
 
+.toast{position:fixed;left:50%;bottom:calc(88px + var(--sab));z-index:60;
+  transform:translateX(-50%) translateY(8px);
+  background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-size:13.5px;
+  box-shadow:0 12px 32px -12px rgba(23,22,29,.55);opacity:0;pointer-events:none;
+  transition:opacity .2s ease, transform .2s ease;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
 .loadnote{font-size:12.5px;color:var(--ink-2);background:var(--glass-2);border:1px solid var(--glass-edge);
   border-radius:10px;padding:9px 12px;margin-bottom:9px;line-height:1.6}
 .renote{color:var(--brand);text-decoration:underline;text-underline-offset:3px;font-size:12.5px;margin-left:4px}
@@ -439,6 +446,8 @@ button{cursor:pointer;background:none;border:none}
       </div>
     </nav>
   </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 
 <div class="scrim" id="drawer" hidden><div class="drawer" id="drawerBody"></div></div>
@@ -530,6 +539,26 @@ function groupLines(lines){
   return out;
 }
 
+/* 把一行切成「格子」。中文一個字一格（跟以前一樣），英文整個單字一格——
+   不然每個字母都是獨立的一格，換行會從單字中間斷開，和弦的寬度也會把單字撐散。
+   和弦落在單字中間就從那裡切開，Amaz[G]ing 這種寫法本來就是對的。 */
+const LATIN=/[A-Za-z0-9'’À-ɏ]/;
+function wordCells(text, chords){
+  const cs=chars(text), at={};
+  chords.forEach(c=>{ at[c.i]=1; });
+  const out=[]; let k=0, max=-1;
+  while(k<cs.length){
+    if(LATIN.test(cs[k])){
+      let j=k+1;
+      while(j<cs.length && LATIN.test(cs[j]) && !at[j]) j++;
+      out.push({i:k, t:cs.slice(k,j).join('')}); k=j;
+    } else { out.push({i:k, t:cs[k]}); k++; }
+  }
+  chords.forEach(c=>{ if(c.i>max) max=c.i; });
+  if(max>=cs.length) out.push({i:cs.length, t:''});   // 壓在行尾的和弦
+  return out;
+}
+
 function sheetHtml(song,steps,fs,print){
   const arr = FLAT_KEYS.has(curKey(song._base,steps).name) ? FLAT : SHARP;
   const cs2=Math.round(fs*0.76), ss=Math.round(fs*0.78);
@@ -564,8 +593,21 @@ function sheetHtml(song,steps,fs,print){
         return `<div class="ln">${u||'&nbsp;'}</div>`;
       };
 
-      h += row(l.text, false, l.alts.length ? 1 : 0);
-      l.alts.forEach((t,k)=>{ h += row(t, true, k+2); });
+      // 多段歌詞要逐字對齊，所以維持一字一格；單段就用詞為單位，英文才不會散掉
+      if(l.alts.length){
+        h += row(l.text, false, 1);
+        l.alts.forEach((t,k)=>{ h += row(t, true, k+2); });
+      }else{
+        const cdStyle=`font-size:${cs2}px;height:${cdh}px;line-height:${cdh}px${ink}`;
+        const txStyle=`font-size:${fs}px;line-height:${lh}px${ink}`;
+        let u='';
+        wordCells(l.text, l.chords).forEach(c=>{
+          const ch=map[c.i];
+          u+=`<span class="u"><i class="cd" style="${cdStyle}">${ch?esc(transposeChord(ch,steps,arr)):''}</i>`+
+             `<i class="tx" style="${txStyle}">${c.t===' '?'&nbsp;':(c.t?esc(c.t):'&nbsp;')}</i></span>`;
+        });
+        h+=`<div class="ln">${u||'&nbsp;'}</div>`;
+      }
     });
   });
   const cr = song.copyright || song._p.meta.copyright;
@@ -763,10 +805,18 @@ function size(d){ const v=st(order[idx].id); v.fs=Math.max(13,Math.min(30,v.fs+d
 function setMode(m){ st(order[idx].id).mode=m; renderSheet(); $('#stage').scrollTop=0; }
 
 /* ---------- 下載 ---------- */
+let toastT=null;
+function toast(msg){
+  const t=$('#toast'); if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
 async function save(){
   const s=order[idx], v=st(s.id), btn=$('#bSave');
   if(modeOf(s,v)==='img' || !s._has){ return dlImage(s); }
-  if(typeof html2canvas==='undefined'){ alert('出圖元件沒載入，確認有網路再試一次'); return; }
+  if(typeof html2canvas==='undefined'){ toast('出圖元件沒載入，確認有網路再試一次'); return; }
   btn.disabled=true;
   try{
     const k=curKey(s._base,v.steps).name, capo=bestCapo(s._base,v.steps);
@@ -784,29 +834,34 @@ async function save(){
     const c=await html2canvas(box,{scale:2,backgroundColor:'#ffffff'});
     document.body.removeChild(box);
     await shareOrDownload(c.toDataURL('image/png'), s.title+'_'+k+'.png', s.title);
-  }catch(e){ alert('產生圖片失敗：'+e.message); }
+  }catch(e){ toast('產生圖片失敗：'+e.message); }
   finally{ btn.disabled=false; }
 }
 async function dlImage(s){
   try{
     const blob=await(await fetch(s._img)).blob();
-    if(await shareBlob(blob,s.title+'.png',s.title)) return;
+    const r=await shareBlob(blob,s.title+'.png',s.title);
+    if(r==='shared'){ toast('已存到相簿'); return; }
+    if(r==='aborted') return;                      // 使用者自己取消，不要再跳下載
   }catch(e){}
-  download(s._img, s.title+'.png');
+  download(s._img, s.title+'.png'); toast('已下載');
 }
 async function shareOrDownload(dataUrl,name,title){
   try{
     const blob=await(await fetch(dataUrl)).blob();
-    if(await shareBlob(blob,name,title)) return;
+    const r=await shareBlob(blob,name,title);
+    if(r==='shared'){ toast('已存到相簿'); return; }
+    if(r==='aborted') return;
   }catch(e){}
-  download(dataUrl,name);
+  download(dataUrl,name); toast('已下載');
 }
+// 'shared' 分享完成｜'aborted' 使用者取消｜'no' 這台裝置不支援
 async function shareBlob(blob,name,title){
-  if(!(navigator.share&&navigator.canShare)) return false;
+  if(!(navigator.share&&navigator.canShare)) return 'no';
   const file=new File([blob],name,{type:'image/png'});
-  if(!navigator.canShare({files:[file]})) return false;
-  try{ await navigator.share({files:[file],title:title}); return true; }
-  catch(e){ return e && e.name==='AbortError'; }
+  if(!navigator.canShare({files:[file]})) return 'no';
+  try{ await navigator.share({files:[file],title:title}); return 'shared'; }
+  catch(e){ return (e && e.name==='AbortError') ? 'aborted' : 'no'; }
 }
 function download(href,name){
   const a=document.createElement('a');
